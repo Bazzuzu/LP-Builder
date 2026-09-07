@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Landing Page Builder</title>
+<link rel="stylesheet" href="src/admin.css">
+</head>
+<body>
+<div id="app" class="app">
+  <header class="topbar">
+    <div class="tb-left">
+      <span class="brand">LP&nbsp;Builder</span>
+      <button class="btn btn-ghost" id="btn-pages">Pages</button>
+      <span class="page-name" id="page-name" title="Page settings"></span>
+    </div>
+    <div class="tb-center">
+      <div class="seg" id="viewport-seg" role="group" aria-label="Viewport">
+        <button data-vp="desktop" class="on">Desktop</button>
+        <button data-vp="tablet">Tablet</button>
+        <button data-vp="mobile">Mobile</button>
+      </div>
+      <div class="seg" id="zoom-seg" role="group" aria-label="Zoom">
+        <button data-zoom="50">50%</button>
+        <button data-zoom="75">75%</button>
+        <button data-zoom="100" class="on">100%</button>
+      </div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-ghost" id="btn-undo" title="Undo (Cmd/Ctrl+Z)">&#8630;</button>
+      <button class="btn btn-ghost" id="btn-redo" title="Redo (Cmd/Ctrl+Shift+Z)">&#8631;</button>
+      <span class="sep"></span>
+      <button class="btn btn-ghost" id="btn-globals" title="Site-wide content">Global</button>
+      <button class="btn btn-ghost" id="btn-issues"><span id="issues-dot" class="dot"></span>Issues</button>
+      <button class="btn btn-ghost" id="btn-json">JSON</button>
+      <button class="btn btn-primary" id="btn-export">Export</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="panel panel-side">
+      <div class="panel-head">
+        <button class="panel-back" id="btn-panel-back" type="button" hidden aria-label="Back to page structure">&#8592;</button>
+        <span id="panel-title">Page structure</span>
+      </div>
+      <div class="panel-body" id="outline"></div>
+      <div class="panel-body" id="inspector" hidden></div>
+    </aside>
+
+    <section class="stage" id="stage">
+      <div class="stage-inner">
+        <iframe id="preview" title="Preview" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-root" id="modal-root" hidden></div>
+<div class="toast-root" id="toast-root"></div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
