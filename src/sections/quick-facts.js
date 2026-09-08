@@ -85,23 +85,42 @@ export default {
   },
 
   css: `
-.qf{display:grid;grid-template-columns:0.9fr 1.5fr 1fr;gap:48px;align-items:start}
-.qf-media{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:clamp(400px,38vw,560px)}
-.qf-media>*{border-radius:14px;overflow:hidden}
-.qf-media img{width:100%;height:100%;object-fit:cover}
-.qf-media .ph{height:100%;min-height:0}
-.qf-small-1{grid-column:1;grid-row:1}
-.qf-small-2{grid-column:1;grid-row:2}
-.qf-big{grid-column:2;grid-row:1/3}
-.qf-facts{display:flex;flex-direction:column;gap:26px}
+/* Four independent columns, not three — the two photo groups are separate tracks so their
+   widths aren't forced to split one column down the middle. The row's height tracks
+   whichever column has the most content (usually the facts list): minmax(400px,auto) gives
+   it a 400px floor without forcing shorter content up to a fixed value — grid_template_rows
+   with two FIXED lengths, e.g. minmax(400px,640px), always resolves to the max in an
+   auto-height container regardless of content, which is not "clamp to content" at all. The
+   640px ceiling is enforced separately below, on the container itself. */
+.qf{display:grid;grid-template-columns:0.9fr 0.75fr 0.75fr 1fr;grid-template-rows:minmax(400px,auto);
+  max-height:640px;gap:32px;align-items:stretch}
+/* The lead paragraph sits on the column's own bottom edge — space-between, not a margin —
+   so it lines up with the bottom of the photo columns regardless of how tall the row grows. */
+.qf-copy{display:flex;flex-direction:column;gap:16px;height:100%;justify-content:space-between}
+.qf-title{margin:0;font-size:var(--h-m);font-weight:var(--h-weight);letter-spacing:-.02em;line-height:1.2}
+.qf-lead{color:var(--ink-soft);font-size:var(--body-l)}
+.qf-lead p{margin:0}
+.qf-stack{display:flex;flex-direction:column;gap:14px;height:100%}
+.qf-stack>*{flex:1;min-height:0;border-radius:14px;overflow:hidden}
+.qf-stack img{width:100%;height:100%;object-fit:cover}
+.qf-stack .ph{height:100%;min-height:0}
+.qf-big{height:100%;border-radius:14px;overflow:hidden}
+.qf-big img{width:100%;height:100%;object-fit:cover}
+.qf-big .ph{height:100%;min-height:0}
+/* overflow-y:auto is the escape hatch for the rare case where facts content genuinely needs
+   more than 640px — it scrolls in place instead of forcing the row (and so the photo
+   columns) past the ceiling above. */
+.qf-facts{display:flex;flex-direction:column;gap:26px;max-height:100%;overflow-y:auto}
 .qf-fact-t{font-weight:var(--title-weight);font-size:19px;letter-spacing:-.01em;margin-bottom:6px}
 .qf-fact-p{font-size:14.5px;color:var(--ink-soft);line-height:1.5}
 .qf-fact-p p{margin:0 0 4px}
 .qf-fact-p p:last-child{margin-bottom:0}
 .qf-note{font-size:12.5px;color:var(--ink-faint);line-height:1.5;margin-top:4px}
 @media (max-width:1023px){
-  .qf{grid-template-columns:1fr;gap:32px}
-  .qf-media{height:clamp(320px,70vw,480px)}
+  .qf{grid-template-columns:1fr;grid-template-rows:none;max-height:none;gap:32px}
+  .qf-copy{height:auto;justify-content:flex-start}
+  .qf-stack,.qf-big{height:clamp(280px,70vw,420px)}
+  .qf-facts{max-height:none;overflow-y:visible}
 }
 `,
 
@@ -111,14 +130,16 @@ export default {
       i < 2 || (!isBlank(c.title) && !blankRich(c.paragraph)));
 
     const copy = `<div class="qf-copy">
-      <div class="sec-sub">${rich(p.primary_paragraph)}</div>
+      <h2 class="qf-title">${esc(p.section_title || '')}</h2>
+      <div class="qf-lead">${rich(p.primary_paragraph)}</div>
     </div>`;
 
-    const media = `<div class="qf-media">
-      <div class="qf-small-1">${img(p.upload_small_1, { placeholder: 'Thumb 1' })}</div>
-      <div class="qf-small-2">${img(p.upload_small_2, { placeholder: 'Thumb 2' })}</div>
-      <div class="qf-big">${img(p.upload_big, { placeholder: 'Featured' })}</div>
+    const stack = `<div class="qf-stack">
+      <div>${img(p.upload_small_1, { placeholder: 'Thumb 1' })}</div>
+      <div>${img(p.upload_small_2, { placeholder: 'Thumb 2' })}</div>
     </div>`;
+
+    const big = `<div class="qf-big">${img(p.upload_big, { placeholder: 'Featured' })}</div>`;
 
     const factsList = `<div class="qf-facts">
       ${facts.map((/** @type {any} */ c) => `<div class="qf-fact">
@@ -128,8 +149,10 @@ export default {
       ${blankRich(p.secondary_paragraph) ? '' : `<div class="qf-note">${rich(p.secondary_paragraph)}</div>`}
     </div>`;
 
-    // Fixed order — text, media, facts — matching the reference layout. No media-side flip:
-    // unlike Text & Media, this section always reads left to right in this one arrangement.
-    return dynamicShell(section, `<div class="qf">${copy}${media}${factsList}</div>`);
+    // Fixed order — text, photo stack, featured photo, facts — matching the reference
+    // layout. No media-side flip: unlike Text & Media, this always reads left to right.
+    // The section's own title/subheading header is skipped (withHeader: false) — the title
+    // lives inside the first column instead, sharing its height with the other three.
+    return dynamicShell(section, `<div class="qf">${copy}${stack}${big}${factsList}</div>`, { withHeader: false });
   },
 };

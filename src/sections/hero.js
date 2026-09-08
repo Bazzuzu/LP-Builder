@@ -103,7 +103,7 @@ export default {
 
     { title: 'Price logos', open: false, fields: [
       { key: 'has_price_aside_logo', kind: 'toggle', label: 'Logo beside the price', default: false },
-      imgField('price_aside_logo', 'Aside logo', { ratio: '1:2', decorative: true, when: (/** @type {any} */ p) => p.has_price_aside_logo }),
+      imgField('price_aside_logo', 'Aside logo', { ratio: '2:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_aside_logo }),
       { key: 'has_price_bottom_logo', kind: 'toggle', label: 'Logo under the price', default: false },
       imgField('price_bottom_logo', 'Bottom logo', { ratio: '10:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_bottom_logo }),
     ] },
@@ -161,7 +161,10 @@ export default {
 .hero.light{color:var(--ink)}
 .hero-bg{position:absolute;inset:0;background-size:cover;background-position:center}
 .hero-ov{position:absolute;inset:0}
-.hero-in{position:relative;padding:40px 0 88px}
+.hero-in{position:relative;padding:24px 0 80px}
+/* Hero gets its own container spec — wider and more generously padded than the site's
+   default .wrap (--container/--gutter) — rather than changing those globally. */
+.hero .wrap{max-width:1280px;padding:0 80px}
 .hero-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;
   padding-bottom:40px}
 .hero-brand{display:flex;justify-self:start}
@@ -183,7 +186,7 @@ export default {
   width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff}
 .hero-menu svg{width:18px;height:18px}
 .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
-.hero-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;
+.hero-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap;
   font-size:14px;letter-spacing:.06em;text-transform:uppercase;opacity:.9}
 .hero-eyebrow .logo-box{height:56px;max-width:560px}
 .hero-eyebrow .logo-box img{height:100%;width:auto;object-fit:contain}
@@ -199,11 +202,11 @@ export default {
 .timer .t-unit{font-weight:600;opacity:.72}
 .timer .t-div{width:1px;height:14px;background:rgba(255,255,255,.28)}
 .hero.light .timer .t-div{background:rgba(0,0,0,.16)}
-.hero h1{margin:0 0 18px;font-weight:var(--headline-weight);letter-spacing:-.03em;line-height:1.08}
+.hero h1{margin:0 0 24px;font-weight:var(--headline-weight);word-wrap:break-word}
 .hero h1 b,.hero h1 strong{font-weight:var(--display-weight)}
-.hero.t-l h1{font-size:56px}
-.hero.t-m h1{font-size:48px}
-.hero.t-s h1{font-size:40px}
+.hero.t-l h1{font-size:56px;line-height:60.48px;letter-spacing:normal}
+.hero.t-m h1{font-size:48px;line-height:49.92px;letter-spacing:.48px}
+.hero.t-s h1{font-size:40px;line-height:44px;letter-spacing:normal}
 .hero-p{font-size:var(--body-l);opacity:.86;max-width:56ch}
 .hero-p p{margin:0 0 10px}
 .hero-card{background:rgba(255,255,255,.1);backdrop-filter:blur(20px);
@@ -212,22 +215,33 @@ export default {
   box-shadow:0 24px 48px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04) inset}
 .hero.light .hero-card{background:rgba(255,255,255,.82);border-color:rgba(0,0,0,.06);
   box-shadow:0 24px 48px -20px rgba(0,0,0,.18),0 0 0 1px rgba(255,255,255,.5) inset}
-.hero-price{margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.18)}
-.hero.light .hero-price{border-top-color:rgba(0,0,0,.1)}
-.price-row{display:flex;gap:18px;align-items:center}
-.price-main{flex:0 1 auto;min-width:0}
+.hero-price{margin-top:24px}
+.price-row{display:flex;align-items:stretch;gap:12px}
+/* The top/bottom rules bracket the price+labels container itself, not the full price row —
+   they must never extend under the logos column, so they live on .price-main's own border,
+   not on a full-width wrapper. Without a logo, .price-main is the row's only child and
+   flex:1 1 auto still fills the full width, matching how it always looked. */
+.price-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px;
+  padding:16px 0;border-top:1px solid rgba(255,255,255,.18);border-bottom:1px solid rgba(255,255,255,.18)}
+.hero.light .price-main{border-color:rgba(0,0,0,.1)}
 .price-top{font-size:14px;opacity:.75}
 .price-val{font-size:44px;font-weight:var(--headline-weight);letter-spacing:-.02em;line-height:1.05}
 .price-star{font-size:.45em;vertical-align:top;opacity:.65}
-.price-bottom{font-size:13px;opacity:.7;margin-top:4px}
-.price-aside{flex:1;min-width:64px;min-height:64px;display:flex;align-items:center;justify-content:flex-end}
-.price-aside img{max-height:100%;max-width:100%;width:auto;object-fit:contain}
-.price-aside .ph{width:100%;min-height:64px}
-.price-below{height:56px;width:100%;margin-top:16px}
+.price-bottom{font-size:13px;opacity:.7}
+/* With a logo alongside, price and logo split the row exactly in half (flex:1 1 0 on both
+   sides) — the top/bottom rules and vertical padding stay exactly as in the no-logo case,
+   just narrower. No vertical rule between them — the row gap alone separates the two. */
+.price-main.has-aside{flex:1 1 0}
+.price-aside{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center}
+.price-aside img{width:100%;height:100%;object-fit:contain}
+/* No boxed/filled placeholder here — a solid card would sit right next to the real divider
+   and read as a second one. A plain label keeps the "nothing uploaded yet" cue without it. */
+.price-aside .ph{width:100%;height:100%;min-height:0;background:none;border-radius:0;color:rgba(255,255,255,.5)}
+.hero.light .price-aside .ph{color:rgba(0,0,0,.4)}
+.price-below{height:56px;width:100%;margin-top:24px}
 .price-below img{height:100%;width:auto;max-width:100%;object-fit:contain}
-.hero-trustpilot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px;
-  padding-top:16px;border-top:1px solid rgba(255,255,255,.18);font-size:13.5px;opacity:.9}
-.hero.light .hero-trustpilot{border-top-color:rgba(0,0,0,.1)}
+.hero-trustpilot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:32px;
+  font-size:13.5px;opacity:.9}
 .hero-tp-stars{display:inline-flex;gap:2px}
 .hero-tp-stars span{display:inline-flex;align-items:center;justify-content:center;width:18px;
   height:18px;background:#00b67a;color:#fff;font-size:10px;border-radius:3px}
@@ -257,10 +271,11 @@ export default {
 }
 @media (max-width:767px){
   .hero-in{padding:32px 0 56px}
+  .hero .wrap{max-width:var(--container);padding:0 var(--gutter)}
   .hero-top{display:flex;flex-wrap:wrap;justify-content:space-between}
-  .hero.t-l h1{font-size:34px}
-  .hero.t-m h1{font-size:31px}
-  .hero.t-s h1{font-size:28px}
+  .hero.t-l h1{font-size:34px;line-height:1.1;letter-spacing:normal}
+  .hero.t-m h1{font-size:31px;line-height:1.1;letter-spacing:normal}
+  .hero.t-s h1{font-size:28px;line-height:1.1;letter-spacing:normal}
   .price-val{font-size:36px}
   .hero-bg.desktop{display:none}
 }
@@ -380,7 +395,7 @@ function priceBlock(p, currency, ctx) {
     <span class="hero-tp-logo"><span class="mark" aria-hidden="true">★</span>Trustpilot</span>
   </div>` : '';
   return `<div class="price-row">
-    <div class="price-main">
+    <div class="${esc(cls('price-main', p.has_price_aside_logo && 'has-aside'))}">
       ${p.price_top_label ? `<div class="price-top">${rich(p.price_top_label)}</div>` : ''}
       <div class="price-val">${esc(currency)}${esc(p.price_main_value || '')}${star}</div>
       ${p.price_bottom_label ? `<div class="price-bottom">${rich(p.price_bottom_label)}</div>` : ''}
