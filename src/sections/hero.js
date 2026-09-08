@@ -76,7 +76,7 @@ export default {
       { key: 'has_inline_badge', kind: 'toggle', label: 'Inline badge', default: false, when: onEyebrowAny('Text', 'Timer') },
       imgField('inline_badge_icon', 'Badge icon', { decorative: true, when: inlineBadgeOn }),
       { key: 'inline_badge_label', kind: 'text', label: 'Badge label', required: true, when: inlineBadgeOn },
-      { key: 'inline_badge_color', kind: 'color', label: 'Badge colour', default: '#7C5C3E', when: inlineBadgeOn },
+      { key: 'inline_badge_color', kind: 'color', label: 'Badge colour', default: '#B8876E', when: inlineBadgeOn },
 
       // Logo
       imgField('logo_image', 'Logo', { hint: 'Ratio 10:1, e.g. 560×56.', decorative: true, when: onEyebrow('Logo') }),
@@ -84,12 +84,12 @@ export default {
       // Standalone Badge
       imgField('badge_icon', 'Badge icon', { decorative: true, when: onEyebrow('Badge') }),
       { key: 'badge_label', kind: 'text', label: 'Badge label', required: true, when: onEyebrow('Badge') },
-      { key: 'badge_color', kind: 'color', label: 'Badge colour', default: '#7C5C3E', when: onEyebrow('Badge') },
+      { key: 'badge_color', kind: 'color', label: 'Badge colour', default: '#B8876E', when: onEyebrow('Badge') },
     ] },
 
     { title: 'Content', open: true, fields: [
-      { key: 'title_preset', kind: 'segmented', label: 'Title size', default: 'Title 1',
-        options: [{ value: 'Title 1', label: '56px' }, { value: 'Title 2', label: '48px' }] },
+      { key: 'title_preset', kind: 'segmented', label: 'Title size', default: 'L',
+        options: [{ value: 'L', label: 'L' }, { value: 'M', label: 'M' }, { value: 'S', label: 'S' }] },
       { key: 'title_text', kind: 'richtext', label: 'Title', required: true, tools: RT_BASIC, singleLine: false },
       { key: 'paragraph_text', kind: 'richtext', label: 'Paragraph', tools: RT_FULL },
 
@@ -110,7 +110,7 @@ export default {
 
     { title: 'Lead form', open: false, fields: [
       { key: 'cta_button_text', kind: 'text', label: 'Button label', default: 'Check Your Price' },
-      { key: 'cta_button_color', kind: 'color', label: 'Button colour', default: '#7C5C3E' },
+      { key: 'cta_button_color', kind: 'color', label: 'Button colour', default: '#B8876E' },
       { key: 'cta_button_text_color', kind: 'color', label: 'Button text colour', default: '#FFFFFF' },
       { key: '_form_note', kind: 'note', label: '',
         text: 'The form fields are fixed by the lead contract (doc 21) and shared with the modal.' },
@@ -124,9 +124,9 @@ export default {
     mobile_overlay_color: '#000000', mobile_overlay_opacity: 50,
     eyebrow_mode: 'None',
     end_timezone: 'UTC', on_expiry: 'HideEyebrow',
-    has_inline_badge: false, inline_badge_color: '#7C5C3E',
-    badge_color: '#7C5C3E',
-    title_preset: 'Title 1',
+    has_inline_badge: false, inline_badge_color: '#B8876E',
+    badge_color: '#B8876E',
+    title_preset: 'L',
     title_text: 'Unrivalled comfort across the Atlantic',
     paragraph_text: '<p>Wholesale business and first class fares, managed end to end by a dedicated specialist.</p>',
     price_top_label: 'Fares starting from',
@@ -135,7 +135,7 @@ export default {
     has_price_aside_logo: false,
     has_price_bottom_logo: false,
     cta_button_text: 'Check Your Price',
-    cta_button_color: '#7C5C3E',
+    cta_button_color: '#B8876E',
     cta_button_text_color: '#FFFFFF',
   },
 
@@ -162,14 +162,14 @@ export default {
 .hero-bg{position:absolute;inset:0;background-size:cover;background-position:center}
 .hero-ov{position:absolute;inset:0}
 .hero-in{position:relative;padding:56px 0 88px}
-.hero-top{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+.hero-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;
   padding-bottom:40px}
-.hero-brand{display:flex}
+.hero-brand{display:flex;justify-self:start}
 .hero-brand svg{height:44px;width:auto;display:block;color:inherit}
 .hero.light .hero-brand{color:var(--bronze)}
-.hero-accs{display:flex}
+.hero-accs{display:flex;justify-self:center}
 .hero-accs svg{height:34px;width:auto;display:block;opacity:.75}
-.hero-nav{display:flex;align-items:center;gap:10px}
+.hero-nav{display:flex;align-items:center;gap:10px;justify-self:end}
 .hero-phone{font-size:13px;font-weight:600;text-decoration:none;padding:7px 15px;
   border-radius:var(--radius-pill);border:1px solid currentColor;opacity:.92;white-space:nowrap}
 .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
@@ -181,13 +181,20 @@ export default {
   font-size:12px;letter-spacing:.04em;color:#fff}
 .pill img{width:14px;height:14px;object-fit:contain;flex:0 0 auto}
 .pill .ph{width:14px;height:14px;min-height:0;border-radius:3px;flex:0 0 auto}
-.timer{display:inline-flex;gap:6px;font-variant-numeric:tabular-nums;font-weight:600}
-.timer b{background:rgba(255,255,255,.14);padding:2px 8px;border-radius:6px}
-.hero.light .timer b{background:rgba(0,0,0,.08)}
-.hero h1{margin:0 0 18px;font-weight:680;letter-spacing:-.03em;line-height:1.08}
-.hero.t1 h1{font-size:56px}
-.hero.t2 h1{font-size:48px}
-.hero-p{font-size:18px;opacity:.86;max-width:56ch}
+.timer{display:inline-flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums;
+  letter-spacing:normal;border:1px solid rgba(255,255,255,.28);border-radius:10px;padding:6px 14px}
+.hero.light .timer{border-color:rgba(0,0,0,.16)}
+.timer .t-seg{display:inline-flex;align-items:baseline;gap:5px}
+.timer .t-num{font-weight:800;font-size:15px}
+.timer .t-unit{font-weight:600;opacity:.72}
+.timer .t-div{width:1px;height:14px;background:rgba(255,255,255,.28)}
+.hero.light .timer .t-div{background:rgba(0,0,0,.16)}
+.hero h1{margin:0 0 18px;font-weight:var(--headline-weight);letter-spacing:-.03em;line-height:1.08}
+.hero h1 b,.hero h1 strong{font-weight:var(--display-weight)}
+.hero.t-l h1{font-size:56px}
+.hero.t-m h1{font-size:48px}
+.hero.t-s h1{font-size:40px}
+.hero-p{font-size:var(--body-l);opacity:.86;max-width:56ch}
 .hero-p p{margin:0 0 10px}
 .hero-card{background:rgba(255,255,255,.1);backdrop-filter:blur(20px);
   border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:28px;
@@ -200,7 +207,7 @@ export default {
 .price-row{display:flex;gap:18px;align-items:center}
 .price-main{flex:0 1 auto;min-width:0}
 .price-top{font-size:14px;opacity:.75}
-.price-val{font-size:44px;font-weight:680;letter-spacing:-.02em;line-height:1.05}
+.price-val{font-size:44px;font-weight:var(--headline-weight);letter-spacing:-.02em;line-height:1.05}
 .price-star{font-size:.45em;vertical-align:top;opacity:.65}
 .price-bottom{font-size:13px;opacity:.7;margin-top:4px}
 .price-aside{flex:1;min-width:64px;min-height:64px;display:flex;align-items:center;justify-content:flex-end}
@@ -208,6 +215,14 @@ export default {
 .price-aside .ph{width:100%;min-height:64px}
 .price-below{height:56px;width:100%;margin-top:16px}
 .price-below img{height:100%;width:auto;max-width:100%;object-fit:contain}
+.hero-trustpilot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px;
+  padding-top:16px;border-top:1px solid rgba(255,255,255,.18);font-size:13.5px;opacity:.9}
+.hero.light .hero-trustpilot{border-top-color:rgba(0,0,0,.1)}
+.hero-tp-stars{display:inline-flex;gap:2px}
+.hero-tp-stars span{display:inline-flex;align-items:center;justify-content:center;width:18px;
+  height:18px;background:#00b67a;color:#fff;font-size:10px;border-radius:3px}
+.hero-tp-logo{display:inline-flex;align-items:center;gap:4px;font-weight:700}
+.hero-tp-logo .mark{color:#00b67a}
 .lead-form{display:grid;gap:16px;margin-top:22px;min-width:0}
 .lf-group{display:grid;gap:10px;min-width:0}
 .lead-form .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0}
@@ -218,7 +233,7 @@ export default {
 .lead-form input::placeholder{color:rgba(0,0,0,.36)}
 .lead-form input:hover,.lead-form select:hover{border-color:rgba(0,0,0,.24)}
 .lead-form input:focus,.lead-form select:focus{outline:0;border-color:var(--bronze);
-  box-shadow:0 0 0 3px rgba(124,92,62,.15)}
+  box-shadow:0 0 0 3px rgba(184,135,110,.15)}
 .lead-form select{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767676' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 14px center;padding-right:34px;cursor:pointer}
@@ -232,9 +247,10 @@ export default {
 }
 @media (max-width:767px){
   .hero-in{padding:32px 0 56px}
-  .hero.t1 h1{font-size:34px}
-  .hero.t2 h1{font-size:31px}
-  .hero-p{font-size:16px}
+  .hero-top{display:flex;flex-wrap:wrap;justify-content:space-between}
+  .hero.t-l h1{font-size:34px}
+  .hero.t-m h1{font-size:31px}
+  .hero.t-s h1{font-size:28px}
   .price-val{font-size:36px}
   .hero-bg.desktop{display:none}
 }
@@ -259,7 +275,8 @@ export default {
         : '',
     ].join('');
 
-    return `<section class="${esc(cls('hero', light ? 'light' : 'dark', p.title_preset === 'Title 2' ? 't2' : 't1'))}"`
+    const titleSize = p.title_preset === 'M' ? 't-m' : p.title_preset === 'S' ? 't-s' : 't-l';
+    return `<section class="${esc(cls('hero', light ? 'light' : 'dark', titleSize))}"`
       + attr('id', section.anchor_id) + style({ background: fallback }) + `>
 ${bg}
 <div class="hero-in"><div class="wrap">
@@ -307,7 +324,7 @@ function eyebrow(p) {
   if (mode === 'Text') inner = esc(p.eyebrow_text || '');
   else if (mode === 'Logo') inner = `<div class="logo-box">${img(p.logo_image, { decorative: true, placeholder: 'Logo' })}</div>`;
   else if (mode === 'Badge') {
-    inner = `<span class="pill"${style({ background: p.badge_color || '#7C5C3E' })}>`
+    inner = `<span class="pill"${style({ background: p.badge_color || '#B8876E' })}>`
       + img(p.badge_icon, { decorative: true, placeholder: '' })
       + `<span>${esc(p.badge_label || '')}</span></span>`;
   } else if (mode === 'Timer') {
@@ -316,7 +333,7 @@ function eyebrow(p) {
   }
   // Text and Timer additionally carry an optional inline badge pill (doc 30 §4.3).
   const badge = (mode === 'Text' || mode === 'Timer') && p.has_inline_badge
-    ? `<span class="pill"${style({ background: p.inline_badge_color || '#7C5C3E' })}>`
+    ? `<span class="pill"${style({ background: p.inline_badge_color || '#B8876E' })}>`
       + img(p.inline_badge_icon, { decorative: true, placeholder: '' })
       + `<span>${esc(p.inline_badge_label || '')}</span></span>`
     : '';
@@ -331,6 +348,15 @@ function priceBlock(p, currency, ctx) {
   // nothing to point at is still worse than none, so it stays conditional on that text
   // actually existing.
   const star = blankRich(ctx?.globals?.footer?.legal_disclaimers) ? '' : '<span class="price-star">*</span>';
+  // Same convention as the footnote asterisk above: no page-level toggle, just conditional
+  // on the global data actually existing — one less switch an admin can leave off by
+  // accident, since this is a trust signal every page wants whenever it's available.
+  const tp = ctx?.globals?.trust?.trustpilot;
+  const trustpilot = tp?.review_count ? `<div class="hero-trustpilot">
+    <span class="hero-tp-stars" aria-hidden="true">${'<span>★</span>'.repeat(5)}</span>
+    <span>${esc(Number(tp.review_count).toLocaleString('en-US'))} reviews on</span>
+    <span class="hero-tp-logo"><span class="mark" aria-hidden="true">★</span>Trustpilot</span>
+  </div>` : '';
   return `<div class="price-row">
     <div class="price-main">
       ${p.price_top_label ? `<div class="price-top">${rich(p.price_top_label)}</div>` : ''}
@@ -339,6 +365,7 @@ function priceBlock(p, currency, ctx) {
     </div>
     ${p.has_price_aside_logo ? `<div class="price-aside">${img(p.price_aside_logo, { decorative: true, placeholder: '' })}</div>` : ''}
   </div>
+  ${trustpilot}
   ${p.has_price_bottom_logo ? `<div class="price-below">${img(p.price_bottom_logo, { decorative: true, placeholder: '' })}</div>` : ''}`;
 }
 

@@ -4,8 +4,8 @@
 export const BASE_CSS = `
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg-white);color:var(--ink);
-  font:16px/1.6 var(--font);-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg-white);color:var(--ink);font-family:var(--font);
+  font-size:var(--body-l);line-height:1.6;font-weight:var(--body-weight);-webkit-font-smoothing:antialiased}
 img{max-width:100%;display:block}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--bronze);outline-offset:3px}
@@ -44,8 +44,10 @@ a{color:inherit}
 .ph{background:repeating-linear-gradient(45deg,#eee 0 8px,#f6f6f6 8px 16px);color:#9a9a9a;
   display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:.04em;
   text-transform:uppercase;min-height:120px;border-radius:var(--radius)}
-/* Seam between two consecutive sections that share the same flat background. */
-.lpb-divider{height:1px;background:#00000014}
+/* Seam between two consecutive sections that share the same flat background. A mid-grey at
+   low opacity, not a black tint — the divider can now land between two dark sections
+   (Footer, Trust) too, where a black-on-black line would be invisible. */
+.lpb-divider{height:1px;background:rgba(128,128,128,.25)}
 
 /* ---- lead modal (21_OBJECT_FLIGHT_QUOTE_MODAL) ---- */
 .lead{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;

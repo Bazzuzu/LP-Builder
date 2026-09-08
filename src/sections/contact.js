@@ -11,6 +11,9 @@ export default {
   group: 'global',
   icon: '☎',
   description: 'Concierge phone numbers and email, site-wide.',
+  // No configurable bg_color, but it always renders on plain white — needed so the
+  // same-background divider (render/page.js) can compare it against its neighbours.
+  fixedBg: '#FFFFFF',
 
   fields: [
     { title: 'Contact', open: true, fields: [
@@ -32,7 +35,7 @@ export default {
 .ct-icon{width:48px;height:48px;border-radius:12px;background:var(--ink);color:#fff;
   display:flex;align-items:center;justify-content:center;margin-bottom:24px}
 .ct-icon svg{width:22px;height:22px}
-.ct-card h3{margin:0 0 8px;font-size:18px;font-weight:650;letter-spacing:-.01em}
+.ct-card h3{margin:0 0 8px;font-size:18px;font-weight:var(--title-weight);letter-spacing:-.01em}
 .ct-card .ct-desc{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.5}
 .ct-card .ct-desc p{margin:0}
 .ct-card .ct-desc a{color:inherit;text-decoration:underline}

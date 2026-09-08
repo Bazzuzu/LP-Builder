@@ -91,7 +91,7 @@ export default {
   background:var(--bg-light-grey);border-radius:14px}
 .ft-icon img{width:100%;height:100%;object-fit:contain}
 .ft-icon .ph{width:100%;height:100%;min-height:0;font-size:10px;border-radius:14px}
-.ft-t{font-weight:650;font-size:18px;letter-spacing:-.01em}
+.ft-t{font-weight:var(--title-weight);font-size:18px;letter-spacing:-.01em}
 .ft-p{color:var(--ink-soft);font-size:15px}
 .ft-p p{margin:0}
 
@@ -134,7 +134,7 @@ export default {
     return dynamicShell(section, `<div class="ft n${items.length} ${layout}">
       ${items.map((it) => `<div class="ft-item">
         <div class="ft-icon" style="width:${size}px;height:${size}px">
-          ${img(it.icon, { decorative: true, placeholder: '' })}
+          ${img(it.icon, { decorative: true, placeholder: 'Icon' })}
         </div>
         <div>
           <div class="ft-t">${esc(it.title || '')}</div>

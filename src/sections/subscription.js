@@ -11,6 +11,9 @@ export default {
   group: 'global',
   icon: '✉',
   description: 'Newsletter signup with standardised corporate copy.',
+  // No configurable bg_color, but it always renders on plain white — needed so the
+  // same-background divider (render/page.js) can compare it against its neighbours.
+  fixedBg: '#FFFFFF',
 
   fields: [
     { title: 'Subscription', open: true, fields: [
@@ -42,6 +45,7 @@ export default {
 .sub-media{position:relative;align-self:stretch;min-height:280px}
 .sub-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
   object-position:right center}
+.sub-media .ph{position:absolute;inset:0;width:100%;height:100%;min-height:0}
 @media (max-width:1023px){
   .sub-card{grid-template-columns:1fr}
   .sub-copy{padding:40px 32px 0}
@@ -66,7 +70,7 @@ export default {
         </form>
         <div class="sub-note">${rich(g.privacy_notice || '')}</div>
       </div>
-      <div class="sub-media">${img(g.phone_image, { placeholder: '', decorative: true })}</div>
+      <div class="sub-media">${img(g.phone_image, { placeholder: 'Image', decorative: true })}</div>
     </div></div></section>`;
   },
 };

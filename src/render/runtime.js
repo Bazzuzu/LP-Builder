@@ -104,21 +104,24 @@ export const RUNTIME_JS = `
     var end = Date.parse(node.getAttribute('data-countdown'));
     var onExpiry = node.getAttribute('data-on-expiry') || 'HideEyebrow';
     if(isNaN(end)) return;
-    var pad = function(n){ return (n<10?'0':'') + n; };
+    // Days and hours only (doc 30 §4.3) — a single bordered pill, not per-unit chips.
+    var seg = function(n, unit){
+      return '<span class="t-seg"><span class="t-num">'+n+'</span><span class="t-unit">'+unit+(n===1?'':'s')+'</span></span>';
+    };
     function tick(){
       var left = end - Date.now();
       if(left <= 0){
         if(onExpiry === 'HideEyebrow'){ var box = node.closest('[data-eyebrow]') || node; box.hidden = true; }
         else if(onExpiry === 'ShowExpiredLabel'){ node.textContent = 'Offer ended'; }
-        else { node.innerHTML = '<b>00</b><b>00</b><b>00</b>'; }
+        else { node.innerHTML = seg(0, 'Day') + '<span class="t-div"></span>' + seg(0, 'Hour'); }
         clearInterval(timer);
         return;
       }
-      var s = Math.floor(left/1000), d = Math.floor(s/86400);
-      node.innerHTML = (d>0 ? '<b>'+d+'d</b>' : '')
-        + '<b>'+pad(Math.floor(s/3600)%24)+'</b><b>'+pad(Math.floor(s/60)%60)+'</b><b>'+pad(s%60)+'</b>';
+      var s = Math.floor(left/1000), d = Math.floor(s/86400), h = Math.floor(s/3600)%24;
+      node.innerHTML = seg(d, 'Day') + '<span class="t-div"></span>' + seg(h, 'Hour');
     }
-    var timer = setInterval(tick, 1000);
+    // Hour granularity — no need to repaint every second.
+    var timer = setInterval(tick, 60000);
     tick();
   });
 

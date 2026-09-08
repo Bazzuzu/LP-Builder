@@ -135,6 +135,8 @@
  * @property {(props: Record<string, any>, ctx?: any) => Issue[]} [validate]
  * @property {(section: Section, ctx: RenderCtx) => string} render
  * @property {string} [css]   Section-scoped CSS. Only the types a page uses ship with it.
+ * @property {string} [fixedBg]   The flat colour this type always renders on when it has no
+ *   configurable `bg_color` field (render/page.js's same-background divider check).
  */
 
 /**

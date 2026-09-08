@@ -10,6 +10,9 @@ export default {
   archetype: ARCHETYPE.DUAL_ANCHOR,
   icon: '▁',
   description: 'Corporate navigation, legal disclaimers, accreditations and social links.',
+  // No configurable bg_color, but it always renders on a fixed dark ground — needed so the
+  // same-background divider (render/page.js) can compare it against its neighbours.
+  fixedBg: '#111111',
 
   fields: [
     { title: 'Footer', open: true, fields: [

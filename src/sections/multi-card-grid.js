@@ -74,7 +74,7 @@ export default {
 .mcg-card{text-align:left}
 .mcg-card img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px}
 .mcg-card .ph{aspect-ratio:4/3;min-height:0}
-.mcg-t{font-weight:650;font-size:18px;margin-top:14px;letter-spacing:-.01em}
+.mcg-t{font-weight:var(--title-weight);font-size:18px;margin-top:14px;letter-spacing:-.01em}
 .mcg-p{color:var(--ink-soft);font-size:15px;margin-top:6px}
 .mcg-p p{margin:0}
 .mcg-note{margin-top:32px;font-size:12.5px;color:var(--ink-faint);text-align:center;line-height:1.5}

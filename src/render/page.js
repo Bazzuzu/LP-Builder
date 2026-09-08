@@ -42,10 +42,11 @@ export function renderPage(page, { registry, globals, mode = 'export', selected 
       html = `<!-- render error in ${esc(s.key)}: ${esc(/** @type {Error} */ (err).message)} -->`;
     }
     // Two sections that both sit on the same flat colour would otherwise run together
-    // as one block — a hairline seam keeps them visually distinct. Only sections with a
-    // configurable `bg_color` are compared; anchors with a fixed, non-flat background
-    // (Hero's image, Prices, Footer, ...) never grow one, on either side.
-    const divider = i > 0 && sameBg(visible[i - 1], s) ? '<div class="lpb-divider"></div>' : '';
+    // as one block — a hairline seam keeps them visually distinct. Sections with a
+    // configurable `bg_color` are compared on that; anchors/statics without one (Prices,
+    // Contact, Subscription, Footer, Trust) fall back to their type's fixed `fixedBg` — only
+    // Hero, whose background is an image, declares none and so never grows one either side.
+    const divider = i > 0 && sameBg(visible[i - 1], s, registry) ? '<div class="lpb-divider"></div>' : '';
     return divider + (mode === 'preview'
       ? `<div class="lpb-sec" data-section-id="${esc(s.id)}">${html}</div>`
       : html);
@@ -81,16 +82,25 @@ ${mode === 'preview' ? `<script>${previewBridge(selected)}</script>` : ''}
 </html>`;
 }
 
-/** The flat background colour a section renders on, or null when it doesn't have one. */
-const sectionBg = (/** @type {import('../model/types.js').Section} */ s) => {
-  const v = s?.props?.bg_color;
+/**
+ * The flat background colour a section renders on, or null when it doesn't have one.
+ * A configurable `bg_color` wins when present; otherwise falls back to the section type's
+ * own fixed `fixedBg` (set on types whose background isn't an editable field but is still a
+ * known flat colour — Prices, Contact, Subscription, Footer, Trust).
+ * @param {import('../model/types.js').Section} s @param {SectionType} [type]
+ */
+const sectionBg = (s, type) => {
+  const v = s?.props?.bg_color ?? type?.fixedBg;
   return v ? String(v).trim().toUpperCase() : null;
 };
 
-/** @type {(a: import('../model/types.js').Section, b: import('../model/types.js').Section) => boolean} */
-const sameBg = (a, b) => {
-  const bgA = sectionBg(a);
-  const bgB = sectionBg(b);
+/**
+ * @type {(a: import('../model/types.js').Section, b: import('../model/types.js').Section,
+ *          registry: Record<string, SectionType>) => boolean}
+ */
+const sameBg = (a, b, registry) => {
+  const bgA = sectionBg(a, registry[a.key]);
+  const bgB = sectionBg(b, registry[b.key]);
   return bgA != null && bgA === bgB;
 };
 
@@ -122,6 +132,6 @@ const PREVIEW_CSS = `
 .lpb-edit .lpb-sec{position:relative;cursor:pointer}
 .lpb-edit .lpb-sec::after{content:"";position:absolute;inset:0;pointer-events:none;
   outline:2px solid transparent;outline-offset:-2px;transition:outline-color .12s}
-.lpb-edit .lpb-sec:hover::after{outline-color:rgba(124,92,62,.45)}
+.lpb-edit .lpb-sec:hover::after{outline-color:rgba(184,135,110,.45)}
 .lpb-edit .lpb-sec.lpb-selected::after{outline-color:var(--bronze)}
 `;

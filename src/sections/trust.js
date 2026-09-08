@@ -14,6 +14,9 @@ export default {
   archetype: ARCHETYPE.DUAL_ANCHOR,
   icon: '★',
   description: 'Trustpilot stream, a video/quote endorsement pair and accreditation badges. Content is site-wide; only the layout is local.',
+  // No configurable bg_color, but it always renders on a fixed dark ground — needed so the
+  // same-background divider (render/page.js) can compare it against its neighbours.
+  fixedBg: '#0B0B0B',
 
   fields: [
     headerGroup({ titleLabel: 'Headline' }),
@@ -81,7 +84,7 @@ export default {
 .tr-review{flex:1 0 220px;scroll-snap-align:start;min-width:0}
 .tr-review-date{font-size:12.5px;color:rgba(255,255,255,.42);margin-bottom:8px}
 .tr-stars{display:inline-flex;color:#00b67a;letter-spacing:2px;font-size:13px;margin-bottom:10px}
-.tr-review-title{font-weight:650;font-size:15.5px;margin-bottom:6px}
+.tr-review-title{font-weight:var(--title-weight);font-size:15.5px;margin-bottom:6px}
 .tr-review-body{font-size:14px;line-height:1.5;color:rgba(255,255,255,.62);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .trust.compact .tr-review-body{display:none}
@@ -100,7 +103,7 @@ export default {
 .tr-avatar.ph{width:56px;height:56px;min-height:0;border-radius:999px;font-size:9px}
 .tr-quote blockquote{margin:0 0 16px;font-size:18px;letter-spacing:-.01em;line-height:1.4;
   color:var(--on-dark)}
-.tr-person b{display:block;font-size:14.5px;font-weight:650}
+.tr-person b{display:block;font-size:14.5px;font-weight:var(--title-weight)}
 .tr-person span{display:block;font-size:13.5px;color:rgba(255,255,255,.55);margin-top:2px}
 
 .tr-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}

@@ -14,6 +14,9 @@ export default {
   archetype: ARCHETYPE.ANCHOR,
   icon: '≡',
   description: 'The transactional anchor: route fares, sticky media and the lead dispatch.',
+  // No configurable bg_color, but it always renders on plain white — needed so the
+  // same-background divider (render/page.js) can compare it against its neighbours.
+  fixedBg: '#FFFFFF',
 
   fields: [
     { title: 'Header', open: true, fields: [
@@ -109,7 +112,6 @@ export default {
   css: `
 .prices{padding:var(--section-y) 0}
 .prices-grid{display:grid;grid-template-columns:360px 1fr;gap:48px;align-items:start}
-.prices-grid.no-media{grid-template-columns:1fr}
 .prices-media{display:grid;position:sticky;top:var(--header-offset)}
 .prices-media img{width:100%;border-radius:16px;object-fit:cover;aspect-ratio:1/1;display:block}
 .prices-media .ph{aspect-ratio:1/1;min-height:0}
@@ -142,6 +144,7 @@ export default {
   border:1px solid rgba(0,0,0,.06);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:6px;
   display:flex;align-items:center;justify-content:center;overflow:hidden}
 .prow-logo img{max-width:100%;max-height:100%;object-fit:contain}
+.prow-logo .ph{width:100%;height:100%;min-height:0;font-size:8px;border-radius:4px}
 .prow-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .prow-title{font-weight:700;font-size:17px}
 .prow-labels{font-size:13.5px;opacity:.55}
@@ -169,22 +172,20 @@ export default {
     const p = section.props || {};
     const currency = currencySymbol(ctx.page?.route?.currency_code);
     const rows = p.rows || [];
+    // There is no "no media" mode here (unlike Text & Media) — Images is a 1-vs-2 choice,
+    // never "none" — so the column always renders, placeholder and all, until something is
+    // uploaded. Collapsing it away just because nothing's uploaded yet hid the very slot an
+    // admin needs to notice is still empty.
     const two = p.media_layout_type === '2 Images';
-    const hasMedia = two
-      ? !!(p.media_image_large || p.media_image_small)
-      : !!p.media_image_single;
-
-    const media = hasMedia
-      ? `<div class="${esc(cls('prices-media', two && 'two'))}">`
-        + (two
-          ? img(p.media_image_small, { className: 'pm-small', placeholder: 'Small image' })
-            + img(p.media_image_large, { className: 'pm-big', placeholder: 'Large image' })
-          : img(p.media_image_single, { placeholder: 'Image' }))
-        + `</div>`
-      : '';
+    const media = `<div class="${esc(cls('prices-media', two && 'two'))}">`
+      + (two
+        ? img(p.media_image_small, { className: 'pm-small', placeholder: 'Small image' })
+          + img(p.media_image_large, { className: 'pm-big', placeholder: 'Large image' })
+        : img(p.media_image_single, { placeholder: 'Image' }))
+      + `</div>`;
 
     return `<section class="prices" data-prices${attr('id', section.anchor_id)}><div class="wrap">
-  <div class="${esc(cls('prices-grid', !hasMedia && 'no-media'))}">
+  <div class="prices-grid">
     ${media}
     <div>
       ${isBlank(p.section_title) ? '' : `<h2 class="${esc(cls('prices-title',
@@ -234,7 +235,9 @@ function renderRow(r, p, currency, ctx) {
   }
   const showL3 = p.show_global_label_3 !== false && !isBlank(r.label_3);
   const showAnchor = p.show_global_anchor_price !== false && !isBlank(r.anchor_price_value);
-  const showLogo = p.show_global_airline_logo !== false && r.airline_logo;
+  // Gated only by the global toggle, not by whether this row has a logo yet — the slot
+  // still needs to show up as a placeholder, or a forgotten upload is invisible.
+  const showLogo = p.show_global_airline_logo !== false;
   // Same convention as Hero's price footnote (doc 30 §5.4): the asterisk points at the
   // Footer's shared legal disclaimer, so it only appears when there is something to point at.
   const star = blankRich(ctx?.globals?.footer?.legal_disclaimers) ? '' : '<span class="price-star">*</span>';
@@ -245,7 +248,7 @@ function renderRow(r, p, currency, ctx) {
     data-cabin="${esc(r.cabin_class || 'Business')}"
     data-row-region="${esc(r.region || 'Global')}"
     aria-label="${esc(name)}"${style({ color: r.text_color })}>
-    ${showLogo ? `<span class="prow-logo">${img(r.airline_logo, { decorative: true, placeholder: '' })}</span>` : ''}
+    ${showLogo ? `<span class="prow-logo">${img(r.airline_logo, { decorative: true, placeholder: 'Logo' })}</span>` : ''}
     <span class="prow-main">
       <span class="prow-title">${esc(r.row_title || '')}</span>
       ${labels.length ? `<span class="prow-labels">${labels.map((l) => `<span>${l}</span>`).join('')}</span>` : ''}

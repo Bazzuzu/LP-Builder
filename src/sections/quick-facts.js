@@ -94,7 +94,7 @@ export default {
 .qf-small-2{grid-column:1;grid-row:2}
 .qf-big{grid-column:2;grid-row:1/3}
 .qf-facts{display:flex;flex-direction:column;gap:26px}
-.qf-fact-t{font-weight:650;font-size:19px;letter-spacing:-.01em;margin-bottom:6px}
+.qf-fact-t{font-weight:var(--title-weight);font-size:19px;letter-spacing:-.01em;margin-bottom:6px}
 .qf-fact-p{font-size:14.5px;color:var(--ink-soft);line-height:1.5}
 .qf-fact-p p{margin:0 0 4px}
 .qf-fact-p p:last-child{margin-bottom:0}
