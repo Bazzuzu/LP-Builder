@@ -59,16 +59,19 @@ button,input,select,textarea{font:inherit;color:inherit}
   padding:16px;overflow:auto;background:
   repeating-conic-gradient(#ececeb 0% 25%, #f5f5f4 0% 50%) 50%/16px 16px}
 .stage-inner{width:100%;display:flex;justify-content:center}
-#preview{width:100%;height:100%;border:0;background:#fff;border-radius:var(--r);
-  box-shadow:var(--shadow);transition:width .18s ease,transform .18s ease;
-  transform-origin:top center}
-.stage[data-vp="tablet"] #preview{width:820px}
-.stage[data-vp="mobile"] #preview{width:390px}
-/* Zoom scales the rendered frame only — the iframe's own width is untouched, so it keeps
-   thinking it's exactly as wide as the active viewport (desktop/tablet/mobile) and renders
-   the same breakpoint. This is a magnifying glass over the page, not a resize of it. */
-.stage[data-zoom="75"] #preview{transform:scale(.75)}
-.stage[data-zoom="50"] #preview{transform:scale(.5)}
+/* The shell is what you actually see on screen — its size never changes with zoom, exactly
+   like a browser window doesn't shrink when you zoom out. Only the iframe inside it does:
+   at 50% zoom it's laid out at 2x the shell's size (so its own CSS pixels — and therefore
+   the viewport width the page's media queries see — stay the active breakpoint's real
+   width) and then scaled back down to fit, the same trick a real browser's zoom uses. */
+.frame-shell{width:100%;height:100%;overflow:hidden;border-radius:var(--r);
+  box-shadow:var(--shadow);transition:width .18s ease}
+.stage[data-vp="tablet"] .frame-shell{width:820px}
+.stage[data-vp="mobile"] .frame-shell{width:390px}
+#preview{width:100%;height:100%;border:0;background:#fff;
+  transition:width .18s ease,height .18s ease,transform .18s ease;transform-origin:top left}
+.stage[data-zoom="75"] #preview{width:133.3333%;height:133.3333%;transform:scale(.75)}
+.stage[data-zoom="50"] #preview{width:200%;height:200%;transform:scale(.5)}
 
 /* ---------- outline ---------- */
 .ol-group{margin:2px 0 8px}
