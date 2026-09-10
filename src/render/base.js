@@ -46,8 +46,20 @@ a{color:inherit}
   text-transform:uppercase;min-height:120px;border-radius:var(--radius)}
 /* Seam between two consecutive sections that share the same flat background. A mid-grey at
    low opacity, not a black tint — the divider can now land between two dark sections
-   (Footer, Trust) too, where a black-on-black line would be invisible. */
-.lpb-divider{height:1px;background:rgba(128,128,128,.25)}
+   (Footer, Trust) too, where a black-on-black line would be invisible.
+
+   It follows the content container instead of bleeding edge to edge: the same 1280px cap
+   and the same 80px gutters every section's own .wrap uses, so the line starts and ends
+   where the copy above and below it does. background-clip:content-box is what keeps the
+   gutters clear — a background on a 1px-high box paints its padding too, so without it the
+   padding would draw the very line it is there to inset.
+   (No backticks anywhere in this file: it is one long JS template literal.) */
+.lpb-divider{height:1px;max-width:1280px;margin:0 auto;padding:0 80px;
+  background:rgba(128,128,128,.25);background-clip:content-box}
+/* Below the breakpoint every section drops to the shared tokens; the seam follows. */
+@media (max-width:767px){
+  .lpb-divider{max-width:var(--container);padding:0 var(--gutter)}
+}
 
 /* ---- lead modal (21_OBJECT_FLIGHT_QUOTE_MODAL) ---- */
 .lead{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;
