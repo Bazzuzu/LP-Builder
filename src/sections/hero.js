@@ -198,7 +198,8 @@ export default {
 .hero-menu{display:flex;align-items:center;justify-content:center;flex:0 0 auto;
   width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff}
 .hero-menu svg{width:18px;height:18px}
-.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+/* The card is a fixed 400px, so it takes its own track rather than half the row. */
+.hero-grid{display:grid;grid-template-columns:1fr 400px;gap:56px;align-items:center}
 .hero-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap;
   font-size:14px;letter-spacing:.06em;text-transform:uppercase;opacity:.9}
 .hero-eyebrow .logo-box{height:56px;max-width:560px}
@@ -222,12 +223,13 @@ export default {
 .hero.t-s h1{font-size:40px;line-height:44px;letter-spacing:normal}
 .hero-p{font-size:var(--body-l);opacity:.86;max-width:56ch}
 .hero-p p{margin:0 0 10px}
-.hero-card{background:rgba(255,255,255,.1);backdrop-filter:blur(20px);
-  border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:28px;
-  width:70%;margin:0 auto;
-  box-shadow:0 24px 48px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04) inset}
-.hero.light .hero-card{background:rgba(255,255,255,.82);border-color:rgba(0,0,0,.06);
-  box-shadow:0 24px 48px -20px rgba(0,0,0,.18),0 0 0 1px rgba(255,255,255,.5) inset}
+/* Solid white in both themes, and a fixed 400px. The notched field labels sit ON the
+   border and hide the part behind them with their own background — which only works if
+   that background is a known, opaque colour, so the card can no longer be translucent. */
+.hero-card{background:#fff;border-radius:20px;padding:24px;
+  width:400px;max-width:100%;margin:0 auto;
+  box-shadow:0 24px 48px -20px rgba(0,0,0,.45)}
+.hero.light .hero-card{box-shadow:0 24px 48px -20px rgba(0,0,0,.18)}
 .hero-price{margin-top:24px}
 .price-row{display:flex;align-items:stretch;gap:12px}
 /* The top/bottom rules bracket the price+labels container itself, not the full price row —
@@ -260,23 +262,66 @@ export default {
   height:18px;background:#00b67a;color:#fff;font-size:10px;border-radius:3px}
 .hero-tp-logo{display:inline-flex;align-items:center;gap:4px;font-weight:700}
 .hero-tp-logo .mark{color:#00b67a}
-.lead-form{display:grid;gap:16px;margin-top:22px;min-width:0}
-.lf-group{display:grid;gap:10px;min-width:0}
-.lead-form .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0}
-.lead-form input,.lead-form select{width:100%;min-width:0;padding:12px 14px;border-radius:10px;
-  border:1px solid rgba(0,0,0,.13);background:#fff;color:var(--ink);font:inherit;font-size:14.5px;
-  -webkit-appearance:none;appearance:none;transition:border-color .15s ease,box-shadow .15s ease;
-  text-overflow:ellipsis}
-.lead-form input::placeholder{color:rgba(0,0,0,.36)}
-.lead-form input:hover,.lead-form select:hover{border-color:rgba(0,0,0,.24)}
-.lead-form input:focus,.lead-form select:focus{outline:0;border-color:var(--bronze);
-  box-shadow:0 0 0 3px rgba(184,135,110,.15)}
-.lead-form select{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767676' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 14px center;padding-right:34px;cursor:pointer}
+/* ---- lead form ----
+   Two shapes only: a pill (the trip selectors at the top) and an outlined box whose label
+   is notched into its own top border. Everything below the pills is the same box, so a
+   pair (From/To) is one box split by a rule rather than two boxes side by side — which is
+   what makes the row read as one control instead of two. */
+.lead-form{display:grid;gap:14px;min-width:0;--lf-line:#dcdcda;--lf-lab:#78787a}
+/* Not two equal halves: the right pill carries two values and a slash, the left one word.
+   Splitting 400px evenly truncated "Business" to "B…" — the mockup's equal halves come from
+   a much wider card, and the ratio is what has to give, not the text. */
+.lf-pills{display:grid;grid-template-columns:.82fr 1.18fr;gap:10px;min-width:0}
+.lf-pill{display:flex;align-items:center;min-width:0;height:40px;padding:0 4px 0 14px;
+  border-radius:999px;background:#f1f1ef;color:var(--ink);font-size:13px;font-weight:600}
+.lf-pill select{flex:1 1 auto;min-width:0;border:0;background:transparent;font:inherit;
+  color:inherit;cursor:pointer;-webkit-appearance:none;appearance:none;outline:0;
+  padding:0 20px 0 0;text-overflow:ellipsis;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23222' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 4px center}
+/* One pill, two real fields — cabin and party size stay separate values rather than being
+   welded into a single combinatorial option list. */
+/* One chevron per pill, at its right edge — the split pill is two controls but reads as
+   one, and a second arrow in the middle of it says otherwise. */
+.lf-pill select:not(:last-of-type){background-image:none;padding-right:0}
+.lf-pill .sep{flex:0 0 auto;padding:0 3px;color:var(--lf-lab);font-weight:400}
+/* Sizes to its own widest option rather than a guessed width. */
+.lf-pill .lf-travellers{flex:0 1 auto}
+
+.lf-field{position:relative;display:grid;border:1px solid var(--lf-line);border-radius:10px;
+  min-width:0;background:#fff}
+.lf-pair{grid-template-columns:1fr 1fr}
+.lf-cell{position:relative;min-width:0;display:flex;align-items:center;height:54px}
+.lf-cell + .lf-cell{border-left:1px solid var(--lf-line)}
+/* The notch: the label paints over the border it sits on, in the card's own white. */
+.lf-lab{position:absolute;top:-7px;left:11px;padding:0 5px;background:#fff;
+  font-size:11.5px;line-height:1.2;color:var(--lf-lab);pointer-events:none;white-space:nowrap}
+.lf-lab i{font-style:normal}
+.lead-form input{width:100%;min-width:0;height:100%;border:0;background:transparent;outline:0;
+  font:inherit;font-size:15px;color:var(--ink);padding:0 14px;text-overflow:ellipsis}
+.lead-form input::placeholder{color:#a6a6a6}
+.lf-field:focus-within{border-color:var(--ink)}
 .lead-form input[type="date"]{cursor:pointer}
-.lead-form .btn{width:100%;text-align:center;padding:13px 26px;font-size:15px;
-  box-shadow:0 10px 24px -8px rgba(0,0,0,.4);transition:transform .12s,filter .12s,box-shadow .15s}
+
+/* Sits on the rule between From and To, punched out of it by its own white background. */
+.lf-swap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;
+  width:30px;height:26px;display:flex;align-items:center;justify-content:center;
+  border:0;background:#fff;color:var(--ink);cursor:pointer;padding:0}
+.lf-swap svg{width:16px;height:16px}
+.lf-swap:hover{color:var(--bronze)}
+
+.lf-phone{grid-template-columns:auto 1fr}
+.lf-cc{display:flex;align-items:center;gap:6px;height:54px;padding:0 12px 0 14px;
+  border-right:1px solid var(--lf-line);position:relative}
+.lf-cc .flag{font-size:17px;line-height:1}
+.lf-cc select{border:0;background:transparent;font:inherit;font-size:15px;color:var(--ink);
+  cursor:pointer;-webkit-appearance:none;appearance:none;outline:0;padding:0 18px 0 0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23222' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 2px center}
+
+.lead-form .btn{width:100%;height:54px;margin-top:6px;display:flex;align-items:center;
+  justify-content:center;gap:10px;padding:0;border-radius:999px;font-size:16px;font-weight:600;
+  box-shadow:0 10px 24px -8px rgba(0,0,0,.4);transition:filter .12s,box-shadow .15s}
 .lead-form .btn:hover{box-shadow:0 12px 28px -8px rgba(0,0,0,.48)}
 @media (max-width:1023px){
   .hero-grid{grid-template-columns:1fr;gap:36px}
@@ -427,28 +472,78 @@ function leadForm(p, ctx) {
   const origin = ctx.page?.route?.default_origin || '';
   const destination = ctx.page?.route?.default_destination || '';
   return `<form class="lead-form" data-hero-lead novalidate>
-    <div class="lf-group">
-      <div class="two">
+    <div class="lf-pills">
+      <span class="lf-pill">
         <select aria-label="Trip type"><option>Round-trip</option><option>One-way</option></select>
+      </span>
+      <span class="lf-pill">
         <select aria-label="Cabin class">${CABIN_CLASSES.map((c) => `<option>${esc(c)}</option>`).join('')}</select>
-      </div>
-      <div class="two">
-        <input aria-label="From" placeholder="From" value="${esc(origin)}">
-        <input aria-label="To" placeholder="To" value="${esc(destination)}">
-      </div>
-      <div class="two">
-        <input aria-label="Departure" type="date"><input aria-label="Return" type="date">
-      </div>
+        <span class="sep" aria-hidden="true">/</span>
+        <select class="lf-travellers" aria-label="Travellers">${
+          [1, 2, 3, 4, 5, 6].map((n) => `<option>${n} Traveler${n > 1 ? 's' : ''}</option>`).join('')
+        }</select>
+      </span>
     </div>
-    <div class="lf-group">
-      <input aria-label="Full name" placeholder="Enter your name" required>
-      <input aria-label="Email" type="email" placeholder="Enter your email" required>
-      <input aria-label="Phone" placeholder="Phone number" required>
+
+    <div class="lf-field lf-pair">
+      <span class="lf-cell">
+        <span class="lf-lab">From</span>
+        <input aria-label="From" placeholder="City or airport" value="${esc(origin)}">
+      </span>
+      <span class="lf-cell">
+        <span class="lf-lab">To</span>
+        <input aria-label="To" placeholder="City or airport" value="${esc(destination)}">
+      </span>
+      <button class="lf-swap" type="button" data-lead-swap aria-label="Swap origin and destination">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 5.5h11M10.5 3 13 5.5 10.5 8M14 10.5H3M5.5 8 3 10.5 5.5 13"/>
+        </svg>
+      </button>
     </div>
+
+    <div class="lf-field lf-pair">
+      <span class="lf-cell">
+        <span class="lf-lab">Departure</span>
+        <input aria-label="Departure" type="date">
+      </span>
+      <span class="lf-cell">
+        <span class="lf-lab">Return</span>
+        <input aria-label="Return" type="date">
+      </span>
+    </div>
+
+    <div class="lf-field">
+      <span class="lf-cell"><span class="lf-lab">Name<i>*</i></span>
+        <input aria-label="Full name" placeholder="Your name" required></span>
+    </div>
+    <div class="lf-field">
+      <span class="lf-cell"><span class="lf-lab">Email<i>*</i></span>
+        <input aria-label="Email" type="email" placeholder="Contact email" required></span>
+    </div>
+    <div class="lf-field lf-phone">
+      <span class="lf-lab">Phone number<i>*</i></span>
+      <span class="lf-cc">
+        <span class="flag" aria-hidden="true">&#127482;&#127480;</span>
+        <select aria-label="Country code">${
+          DIAL_CODES.map((c) => `<option>${esc(c)}</option>`).join('')
+        }</select>
+      </span>
+      <span class="lf-cell"><input aria-label="Phone" placeholder="XXX XXX XXXX" required></span>
+    </div>
+
     <button class="btn" type="submit"${style({ background: p.cta_button_color, color: p.cta_button_text_color })}>
-      ${esc(p.cta_button_text || 'Check Your Price')} &rsaquo;</button>
+      ${esc(p.cta_button_text || 'Check Your Price')}
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 3.5 10.5 8 6 12.5"/>
+      </svg>
+    </button>
   </form>`;
 }
+
+/** Enough to look like a real picker without shipping a country database. */
+const DIAL_CODES = ['+1', '+44', '+33', '+49', '+34', '+39', '+971', '+65', '+81', '+61'];
 
 /* --------------------------------------------------------------- helpers */
 

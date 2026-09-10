@@ -66,6 +66,21 @@ export const RUNTIME_JS = `
     form.style.display = 'none';
   });
 
+  /* ---------------- swap origin / destination ---------------- */
+  // A control that looks like a button and does nothing is worse than no control, so the
+  // arrows in the From/To rule actually swap the two values.
+  $$('[data-lead-swap]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var pair = btn.closest('.lf-pair');
+      var fields = pair ? $$('input', pair) : [];
+      if(fields.length < 2) return;
+      var tmp = fields[0].value;
+      fields[0].value = fields[1].value;
+      fields[1].value = tmp;
+      fields[0].focus();
+    });
+  });
+
   /* ---------------- price rows (doc 31 §5.4) ---------------- */
   // Rows are real buttons in the markup, so keyboard activation is free; this only carries
   // the row payload into the modal.
