@@ -18,11 +18,12 @@ import largeImageBanner from './large-image-banner.js';
 import textMedia from './text-media.js';
 import logoMarquee from './logo-marquee.js';
 import feature from './feature.js';
+import faq from './faq.js';
 
 /** @type {import('../model/types.js').SectionType[]} */
 const LIST = [
   hero, prices, trust, footer, subscription, contact,
-  quickFacts, multiCardGrid, largeImageBanner, textMedia, logoMarquee, feature,
+  quickFacts, multiCardGrid, largeImageBanner, textMedia, logoMarquee, feature, faq,
 ];
 
 /** @type {Record<string, import('../model/types.js').SectionType>} */

@@ -178,7 +178,11 @@ export const previewBridge = (selectedId) => `
     node.addEventListener('click', function(e){
       var inner = e.target.closest('[data-section-id]');
       if(inner !== node) return;
-      e.preventDefault();
+      // The blanket preventDefault here is what stops a link from navigating the editor's
+      // canvas away from the page being edited. It must NOT reach a native disclosure: the
+      // preview is exactly where an author checks that an FAQ answer opens, and swallowing
+      // the toggle made a working accordion look broken in the one place it is inspected.
+      if(!e.target.closest('summary')) e.preventDefault();
       parent.postMessage({ type:'lpb:select', id: node.getAttribute('data-section-id') }, '*');
     }, true);
   });

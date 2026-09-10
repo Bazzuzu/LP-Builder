@@ -17,6 +17,7 @@ export const COMPONENT_KEYS = /** @type {const} */ ([
   'SECTION_TEXT_MEDIA',
   'SECTION_LOGO_MARQUEE',
   'SECTION_FEATURE',
+  'SECTION_FAQ',
 ]);
 
 /** @typedef {'anchor'|'dual-anchor'|'static'|'dynamic'} Archetype */
