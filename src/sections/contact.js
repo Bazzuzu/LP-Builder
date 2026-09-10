@@ -25,11 +25,14 @@ export default {
   defaults: {},
 
   css: `
-.ct{padding:var(--section-y) 0}
-.ct-head{max-width:640px;margin-bottom:32px}
+/* Its own container spec, same pattern as Hero/Prices/Feature/Story & Specs/Text & Media/
+   Trust/Multi-Card Grid/Subscription — px/py here (no max-width given for this one). */
+.ct{padding:80px 0}
+.ct .wrap{max-width:1280px;padding:0 80px}
+.ct-head{max-width:640px;margin-bottom:40px}
 .ct-head h2{margin:0 0 10px;font-size:30px;letter-spacing:-.02em;line-height:1.2}
 .ct-head p{margin:0;color:var(--ink-soft)}
-.ct-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+.ct-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:40px}
 .ct-card{border:1px solid var(--line);border-radius:14px;padding:28px;display:flex;
   flex-direction:column}
 .ct-icon{width:48px;height:48px;border-radius:12px;background:var(--ink);color:#fff;
@@ -43,7 +46,11 @@ export default {
 .ct-cta{display:block;border-top:1px solid var(--line);padding-top:16px;text-align:right;
   color:var(--bronze);font-weight:600;font-size:14.5px;text-decoration:none}
 .ct-cta:hover{text-decoration:underline}
-@media (max-width:767px){ .ct-head h2{font-size:24px} }
+@media (max-width:767px){
+  .ct-head h2{font-size:24px}
+  .ct{padding:var(--section-y) 0}
+  .ct .wrap{max-width:var(--container);padding:0 var(--gutter)}
+}
 `,
 
   render(section, ctx) {

@@ -52,8 +52,11 @@ export default {
   },
 
   css: `
-.trust{background:#0B0B0B;color:var(--on-dark);padding:var(--section-y) 0}
+/* Its own container spec, same pattern as Hero/Prices/Feature/Story & Specs/Text & Media —
+   Compact keeps its own distinct, already-smaller vertical rhythm (44px), untouched. */
+.trust{background:#0B0B0B;color:var(--on-dark);padding:80px 0}
 .trust.compact{padding:44px 0}
+.trust .wrap{max-width:1280px;padding:0 80px}
 .tr-head{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap;
   margin-bottom:40px}
 .tr-title{margin:0 0 10px;font-size:var(--h-m);font-weight:700;letter-spacing:-.02em;line-height:1.2;
@@ -106,7 +109,7 @@ export default {
 .tr-person b{display:block;font-size:14.5px;font-weight:var(--title-weight)}
 .tr-person span{display:block;font-size:13.5px;color:rgba(255,255,255,.55);margin-top:2px}
 
-.tr-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.tr-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:40px}
 .tr-badge{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;
   padding:24px}
 .tr-badge img{height:32px;width:auto;max-width:120px;object-fit:contain;margin-bottom:28px;display:block}
@@ -115,6 +118,8 @@ export default {
 .tr-badge-body{font-size:14px;line-height:1.5;color:rgba(255,255,255,.55)}
 
 @media (max-width:767px){
+  .trust{padding:var(--section-y) 0}
+  .trust .wrap{max-width:var(--container);padding:0 var(--gutter)}
   .tr-head{flex-direction:column;align-items:flex-start}
   .tr-celeb{grid-template-columns:1fr}
   .tr-nav{display:none}

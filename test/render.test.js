@@ -122,7 +122,10 @@ test('an empty header renders no header wrapper at all', () => {
   const html = render(page);
   // Match the markup, not the stylesheet — `.sec-head{...}` always lives in BASE_CSS.
   assert.equal(html.includes('<div class="sec-head">'), false);
-  assert.ok(html.includes('class="sec h-m a-left"'), 'the section itself still renders');
+  // Not an exact class-list match — some section types append their own container class
+  // (e.g. Text & Media's "tm-sec") after these three, which is fine; only their presence
+  // and order matter here.
+  assert.match(html, /class="sec h-m a-left\b/, 'the section itself still renders');
 });
 
 test('a null page renders a valid empty document', () => {

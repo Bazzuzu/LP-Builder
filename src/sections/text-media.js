@@ -1,7 +1,7 @@
 // Text & Media — spec doc 39. Editorial split with 0, 1 or 2 images.
 import { ARCHETYPE } from '../model/enums.js';
 import { blankRich, cls, ctaLink, dynamicShell, esc, img, rich } from '../render/html.js';
-import { RT_FULL, all, ctaGroup, imgField, needMedia, needRich, needText, styleGroup } from './_common.js';
+import { ALIGN_OPTS, RT_FULL, SIZE_OPTS, all, ctaGroup, imgField, needMedia, needRich, needText, styleGroup } from './_common.js';
 
 const hasMedia = (/** @type {any} */ p) => p.media_mode !== 'No Photo';
 
@@ -16,10 +16,12 @@ export default {
   description: 'Narrative copy beside zero, one or two images, on either side.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF', size: 'SIZE_M', align: 'ALIGN_LEFT' }),
+    styleGroup({ bg: '#FFFFFF' }),
     { title: 'Content', open: true, fields: [
       { key: 'section_title', kind: 'text', label: 'Section title', required: true },
       { key: 'paragraph', kind: 'richtext', label: 'Paragraph', required: true, tools: RT_FULL },
+      { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: 'SIZE_M', options: SIZE_OPTS },
+      { key: 'heading_align', kind: 'segmented', label: 'Heading alignment', default: 'ALIGN_LEFT', options: ALIGN_OPTS },
     ] },
     { title: 'Media', open: true, fields: [
       { key: 'media_mode', kind: 'segmented', label: 'Images', default: '1 Photo',
@@ -56,7 +58,11 @@ export default {
   },
 
   css: `
-.tm{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+/* Its own container spec, same pattern as Hero/Prices/Feature/Logo Marquee/Story & Specs —
+   px/py only here, the default max-width still applies. */
+.tm-sec .wrap{max-width:1280px;padding-left:80px;padding-right:80px}
+.tm-sec{padding-top:80px;padding-bottom:80px}
+.tm{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
 .tm.media-left .tm-copy{order:2}
 .tm-copy .sec-title{margin-bottom:14px}
 .tm-body{color:var(--ink-soft);font-size:17px}
@@ -93,6 +99,10 @@ export default {
      them off to the nearest positioned ancestor instead. */
   .tm-media{position:relative}
 }
+@media (max-width:767px){
+  .tm-sec .wrap{max-width:var(--container);padding-left:var(--gutter);padding-right:var(--gutter)}
+  .tm-sec{padding-top:var(--section-y);padding-bottom:var(--section-y)}
+}
 `,
 
   render(section) {
@@ -111,7 +121,7 @@ export default {
       return dynamicShell(section, `<div class="tm no-media">
         <div class="tm-title-col"><h2 class="sec-title">${esc(p.section_title || '')}</h2></div>
         <div class="tm-copy"><div class="tm-body">${rich(p.paragraph)}</div>${cta}</div>
-      </div>`, { withHeader: false });
+      </div>`, { withHeader: false, className: 'tm-sec' });
     }
 
     const copy = `<div class="tm-copy">
@@ -131,6 +141,6 @@ export default {
     // handles it by stacking the copy block, which already carries that internal order.
     return dynamicShell(section,
       `<div class="${esc(cls('tm', left && 'media-left'))}">${copy}${media}</div>`,
-      { withHeader: false });
+      { withHeader: false, className: 'tm-sec' });
   },
 };

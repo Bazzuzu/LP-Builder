@@ -5,7 +5,7 @@
 // not literally a "quick facts" widget.
 import { ARCHETYPE, LEVEL } from '../model/enums.js';
 import { blankRich, dynamicShell, esc, img, rich } from '../render/html.js';
-import { RT_FULL, all, imgField, isBlank, needMedia, needRich, needText, styleGroup } from './_common.js';
+import { ALIGN_OPTS, RT_FULL, SIZE_OPTS, all, imgField, isBlank, needMedia, needRich, needText, styleGroup } from './_common.js';
 
 /** @type {import('../model/types.js').SectionType} */
 export default {
@@ -18,12 +18,14 @@ export default {
   description: 'Narrative text, a photo pairing and a list of specs. Fixed layout, no media-side flip.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF', size: 'SIZE_M', align: 'ALIGN_LEFT' }),
+    styleGroup({ bg: '#FFFFFF' }),
     { title: 'Content', open: true, fields: [
       { key: 'section_title', kind: 'text', label: 'Section title', required: true },
       { key: 'primary_paragraph', kind: 'richtext', label: 'Lead paragraph', required: true, tools: RT_FULL },
       { key: 'secondary_paragraph', kind: 'richtext', label: 'Footnote', tools: RT_FULL,
         help: 'Optional small print under the fact list, e.g. a disclaimer.' },
+      { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: 'SIZE_M', options: SIZE_OPTS },
+      { key: 'heading_align', kind: 'segmented', label: 'Heading alignment', default: 'ALIGN_LEFT', options: ALIGN_OPTS },
     ] },
     { title: 'Facts', open: true, fields: [
       { key: 'cards', kind: 'repeater', label: 'Facts', min: 2, max: 4, addLabel: '+ Add fact',
@@ -85,6 +87,9 @@ export default {
   },
 
   css: `
+/* Its own container spec, same pattern as Hero/Prices/Feature/Logo Marquee. */
+.qf-sec .wrap{max-width:1280px;padding:0 80px}
+.qf-sec{padding:80px 0}
 /* Four independent columns, not three — the two photo groups are separate tracks so their
    widths aren't forced to split one column down the middle. The row's height tracks
    whichever column has the most content (usually the facts list): minmax(400px,auto) gives
@@ -93,14 +98,14 @@ export default {
    auto-height container regardless of content, which is not "clamp to content" at all. The
    640px ceiling is enforced separately below, on the container itself. */
 .qf{display:grid;grid-template-columns:0.9fr 0.75fr 0.75fr 1fr;grid-template-rows:minmax(400px,auto);
-  max-height:640px;gap:32px;align-items:stretch}
+  max-height:640px;gap:40px;align-items:stretch}
 /* The lead paragraph sits on the column's own bottom edge — space-between, not a margin —
    so it lines up with the bottom of the photo columns regardless of how tall the row grows. */
 .qf-copy{display:flex;flex-direction:column;gap:16px;height:100%;justify-content:space-between}
 .qf-title{margin:0;font-size:var(--h-m);font-weight:var(--h-weight);letter-spacing:-.02em;line-height:1.2}
 .qf-lead{color:var(--ink-soft);font-size:var(--body-l)}
 .qf-lead p{margin:0}
-.qf-stack{display:flex;flex-direction:column;gap:14px;height:100%}
+.qf-stack{display:flex;flex-direction:column;gap:40px;height:100%}
 .qf-stack>*{flex:1;min-height:0;border-radius:14px;overflow:hidden}
 .qf-stack img{width:100%;height:100%;object-fit:cover}
 .qf-stack .ph{height:100%;min-height:0}
@@ -117,10 +122,14 @@ export default {
 .qf-fact-p p:last-child{margin-bottom:0}
 .qf-note{font-size:12.5px;color:var(--ink-faint);line-height:1.5;margin-top:4px}
 @media (max-width:1023px){
-  .qf{grid-template-columns:1fr;grid-template-rows:none;max-height:none;gap:32px}
+  .qf{grid-template-columns:1fr;grid-template-rows:none;max-height:none;gap:40px}
   .qf-copy{height:auto;justify-content:flex-start}
   .qf-stack,.qf-big{height:clamp(280px,70vw,420px)}
   .qf-facts{max-height:none;overflow-y:visible}
+}
+@media (max-width:767px){
+  .qf-sec{padding:var(--section-y) 0}
+  .qf-sec .wrap{max-width:var(--container);padding:0 var(--gutter)}
 }
 `,
 
@@ -153,6 +162,7 @@ export default {
     // layout. No media-side flip: unlike Text & Media, this always reads left to right.
     // The section's own title/subheading header is skipped (withHeader: false) — the title
     // lives inside the first column instead, sharing its height with the other three.
-    return dynamicShell(section, `<div class="qf">${copy}${stack}${big}${factsList}</div>`, { withHeader: false });
+    return dynamicShell(section, `<div class="qf">${copy}${stack}${big}${factsList}</div>`,
+      { withHeader: false, className: 'qf-sec' });
   },
 };

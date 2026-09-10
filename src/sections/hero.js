@@ -219,9 +219,9 @@ export default {
 .price-row{display:flex;align-items:stretch;gap:12px}
 /* The top/bottom rules bracket the price+labels container itself, not the full price row —
    they must never extend under the logos column, so they live on .price-main's own border,
-   not on a full-width wrapper. Without a logo, .price-main is the row's only child and
-   flex:1 1 auto still fills the full width, matching how it always looked. */
-.price-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px;
+   not on a full-width wrapper. Capped at 50% even with no logo alongside it, so the price
+   block never grows to fill the whole row on its own. */
+.price-main{flex:1 1 auto;max-width:50%;min-width:0;display:flex;flex-direction:column;gap:4px;
   padding:16px 0;border-top:1px solid rgba(255,255,255,.18);border-bottom:1px solid rgba(255,255,255,.18)}
 .hero.light .price-main{border-color:rgba(0,0,0,.1)}
 .price-top{font-size:14px;opacity:.75}

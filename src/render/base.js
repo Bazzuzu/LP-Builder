@@ -17,10 +17,10 @@ a{color:inherit}
 .sec.a-center{text-align:center}
 .sec-head{margin-bottom:36px;max-width:760px}
 .sec.a-center .sec-head{margin-left:auto;margin-right:auto}
-.sec-title{margin:0 0 12px;font-weight:var(--h-weight);letter-spacing:-.02em;line-height:1.2}
-.h-s .sec-title{font-size:var(--h-s)}
-.h-m .sec-title{font-size:var(--h-m)}
-.h-l .sec-title{font-size:var(--h-l);line-height:1.15}
+.sec-title{margin:0;font-weight:var(--h-weight);letter-spacing:-.02em;line-height:1.2}
+.h-s .sec-title{font-size:var(--h-s);margin-bottom:8px}
+.h-m .sec-title{font-size:var(--h-m);margin-bottom:8px}
+.h-l .sec-title{font-size:var(--h-l);line-height:1.15;margin-bottom:12px}
 .sec-sub{color:var(--ink-soft);font-size:17px}
 .sec-sub p{margin:0 0 8px}
 .sec-sub p:last-child{margin-bottom:0}

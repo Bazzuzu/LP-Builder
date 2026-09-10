@@ -19,24 +19,28 @@ export const ALIGN_OPTS = [
 /**
  * The universal controls of a dynamic section (11_ABSTRACT §4.2) plus the in-page anchor.
  * `scope: 'section'` marks a field the inspector writes onto the Section itself rather than
- * into `props`.
- * @param {{ bg?: string, size?: string, align?: string }} [defaults]
+ * into `props`. Heading size/alignment live in headerGroup — they're about the header
+ * content, not the section's own background/anchor.
+ * @param {{ bg?: string }} [defaults]
  */
-export const styleGroup = ({ bg = '#FFFFFF', size = 'SIZE_M', align = 'ALIGN_LEFT' } = {}) => ({
+export const styleGroup = ({ bg = '#FFFFFF' } = {}) => ({
   title: 'Section style',
   open: false,
   fields: [
     { key: 'bg_color', kind: 'color', label: 'Background', default: bg, presets: BG_PRESETS, alpha: true },
-    { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: size, options: SIZE_OPTS },
-    { key: 'heading_align', kind: 'segmented', label: 'Heading alignment', default: align, options: ALIGN_OPTS },
     { key: 'anchor_id', kind: 'text', label: 'Anchor id',
       scope: /** @type {'section'} */ ('section'), placeholder: 'e.g. deals',
       help: 'Optional. Lets a CTA link to this section with #anchor.' },
   ],
 });
 
-/** Optional section header. Hidden on the page when both fields are empty. */
-export const headerGroup = ({ open = true, titleLabel = 'Section title', required = false } = {}) => ({
+/**
+ * Optional section header. Hidden on the page when both title and subheading are empty.
+ * Heading size/alignment sit here rather than in styleGroup — they shape the header itself.
+ * @param {{ open?: boolean, titleLabel?: string, required?: boolean, size?: string, align?: string }} [opts]
+ */
+export const headerGroup = ({ open = true, titleLabel = 'Section title', required = false,
+  size = 'SIZE_M', align = 'ALIGN_LEFT' } = {}) => ({
   title: 'Header',
   open,
   fields: [
@@ -44,6 +48,8 @@ export const headerGroup = ({ open = true, titleLabel = 'Section title', require
       help: required ? undefined : 'Hidden when empty.' },
     { key: 'subheading', kind: 'richtext', label: 'Subheading', tools: RT_FULL,
       help: 'Hidden when empty.' },
+    { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: size, options: SIZE_OPTS },
+    { key: 'heading_align', kind: 'segmented', label: 'Heading alignment', default: align, options: ALIGN_OPTS },
   ],
 });
 

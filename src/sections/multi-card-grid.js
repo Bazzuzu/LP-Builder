@@ -14,8 +14,8 @@ export default {
   description: 'Two to four media cards: either all pictures, or all pictures with copy.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF', size: 'SIZE_M', align: 'ALIGN_CENTER' }),
-    headerGroup(),
+    styleGroup({ bg: '#FFFFFF' }),
+    headerGroup({ size: 'SIZE_M', align: 'ALIGN_CENTER' }),
     { title: 'Grid', open: true, fields: [
       { key: 'card_count', kind: 'segmented', label: 'Cards', default: 3,
         options: [{ value: 2, label: '2' }, { value: 3, label: '3' }, { value: 4, label: '4' }],
@@ -67,7 +67,12 @@ export default {
   },
 
   css: `
-.mcg{display:grid;gap:24px}
+/* Its own container spec, same pattern as Hero/Prices/Feature/Story & Specs/Text & Media/
+   Trust — px/py/max-width here, plus its own header-to-grid gap. */
+.mcg-sec .wrap{max-width:1280px;padding:0 80px}
+.mcg-sec{padding:80px 0}
+.mcg-sec .sec-head{margin-bottom:40px}
+.mcg{display:grid;gap:40px}
 .mcg.n2{grid-template-columns:repeat(2,1fr)}
 .mcg.n3{grid-template-columns:repeat(3,1fr)}
 .mcg.n4{grid-template-columns:repeat(4,1fr)}
@@ -80,7 +85,11 @@ export default {
 .mcg-note{margin-top:32px;font-size:12.5px;color:var(--ink-faint);text-align:center;line-height:1.5}
 .mcg-note p{margin:0}
 @media (max-width:1023px){ .mcg.n3,.mcg.n4{grid-template-columns:repeat(2,1fr)} }
-@media (max-width:767px){ .mcg,.mcg.n2,.mcg.n3,.mcg.n4{grid-template-columns:1fr} }
+@media (max-width:767px){
+  .mcg,.mcg.n2,.mcg.n3,.mcg.n4{grid-template-columns:1fr}
+  .mcg-sec .wrap{max-width:var(--container);padding:0 var(--gutter)}
+  .mcg-sec{padding:var(--section-y) 0}
+}
 `,
 
   render(section) {
@@ -94,7 +103,8 @@ export default {
         ${isBlank(stripped(c.paragraph)) ? '' : `<div class="mcg-p">${rich(c.paragraph)}</div>`}
       </div>`).join('')}
     </div>
-    ${blankRich(p.footnote) ? '' : `<div class="mcg-note">${rich(p.footnote)}</div>`}`);
+    ${blankRich(p.footnote) ? '' : `<div class="mcg-note">${rich(p.footnote)}</div>`}`,
+      { className: 'mcg-sec' });
   },
 };
 

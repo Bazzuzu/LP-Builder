@@ -110,9 +110,12 @@ export default {
   },
 
   css: `
-.prices{padding:var(--section-y) 0}
-.prices-grid{display:grid;grid-template-columns:360px 1fr;gap:48px;align-items:start}
-.prices-media{display:grid;position:sticky;top:var(--header-offset)}
+/* Its own container spec — wider, with its own vertical rhythm and gutter — rather than the
+   site's default .sec/.wrap (--section-y/--container/--gutter), same pattern as Hero. */
+.prices{padding:80px 0}
+.prices .wrap{max-width:1280px;padding:0 80px}
+.prices-grid{display:grid;grid-template-columns:360px 1fr;gap:64px;align-items:start}
+.prices-media{display:grid;position:sticky;top:80px}
 .prices-media img{width:100%;border-radius:16px;object-fit:cover;aspect-ratio:1/1;display:block}
 .prices-media .ph{aspect-ratio:1/1;min-height:0}
 /* Two photos: an overlapping pair, matching Text & Media's collage — a cutout stroke in the
@@ -124,11 +127,16 @@ export default {
 .prices-media.two .pm-small{top:0;left:0;width:42%;z-index:1}
 .prices-media.two .pm-big{bottom:0;right:0;width:72%;z-index:2}
 .prices-media.two img,.prices-media.two .ph{border-radius:0}
+/* Its own horizontal inset — the price column reads better with room on both sides than
+   flush against the media column's gutter. The 24px rhythm below covers just the head/tabs/
+   table group; the footer note sits outside it, keeping its own separate margin. */
+.prices-content{padding:0 40px}
+.prices-body{display:flex;flex-direction:column;gap:24px}
 .prices-title{margin:0 0 12px;font-size:32px;letter-spacing:-.02em;line-height:1.2}
 .prices-title.regular{font-weight:500}
 .prices-title.italic{font-style:italic}
-.prices-sub{color:var(--ink-soft);margin-bottom:22px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.prices-sub{color:var(--ink-soft)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
 .tabs button{border:1px solid var(--line);background:#fff;padding:6px 14px;
   border-radius:var(--radius-pill);cursor:pointer;font:inherit;font-size:13.5px;color:var(--ink-soft)}
 .tabs button.on{background:var(--ink);border-color:transparent;color:#fff}
@@ -166,6 +174,10 @@ export default {
      absolutely against this element; static would stop it anchoring them. */
   .prices-media{position:relative;order:-1}
 }
+@media (max-width:767px){
+  .prices{padding:var(--section-y) 0}
+  .prices .wrap{max-width:var(--container);padding:0 var(--gutter)}
+}
 `,
 
   render(section, ctx) {
@@ -184,16 +196,26 @@ export default {
         : img(p.media_image_single, { placeholder: 'Image' }))
       + `</div>`;
 
+    const hasTitle = !isBlank(p.section_title);
+    const hasSub = !blankRich(p.subheading);
+    const head = !hasTitle && !hasSub ? '' : `<div class="prices-head">
+      ${hasTitle ? `<h2 class="${esc(cls('prices-title',
+          p.title_weight === 'Regular' && 'regular', p.title_italic && 'italic'))}"${style({ color: p.title_color })}>${esc(p.section_title)}</h2>` : ''}
+      ${hasSub ? `<div class="prices-sub">${rich(p.subheading)}</div>` : ''}
+    </div>`;
+
     return `<section class="prices" data-prices${attr('id', section.anchor_id)}><div class="wrap">
   <div class="prices-grid">
     ${media}
-    <div>
-      ${isBlank(p.section_title) ? '' : `<h2 class="${esc(cls('prices-title',
-          p.title_weight === 'Regular' && 'regular', p.title_italic && 'italic'))}"${style({ color: p.title_color })}>${esc(p.section_title)}</h2>`}
-      ${blankRich(p.subheading) ? '' : `<div class="prices-sub">${rich(p.subheading)}</div>`}
-      ${regionTabs(p, rows)}
-      ${tableHead(p)}
-      ${rows.map((/** @type {any} */ r) => renderRow(r, p, currency, ctx)).join('')}
+    <div class="prices-content">
+      <div class="prices-body">
+        ${head}
+        ${regionTabs(p, rows)}
+        <div class="prices-table">
+          ${tableHead(p)}
+          ${rows.map((/** @type {any} */ r) => renderRow(r, p, currency, ctx)).join('')}
+        </div>
+      </div>
       ${blankRich(p.footer_paragraph) ? '' : `<div class="prices-note">${rich(p.footer_paragraph)}</div>`}
     </div>
   </div>

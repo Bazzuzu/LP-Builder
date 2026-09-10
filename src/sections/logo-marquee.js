@@ -14,8 +14,8 @@ export default {
   description: 'Partner logos. Centred when they fit, an infinite ticker when they do not.',
 
   fields: [
-    styleGroup({ bg: BG_LIGHT_GREY, size: 'SIZE_S', align: 'ALIGN_CENTER' }),
-    headerGroup({ open: false }),
+    styleGroup({ bg: BG_LIGHT_GREY }),
+    headerGroup({ open: false, size: 'SIZE_S', align: 'ALIGN_CENTER' }),
     { title: 'Logos', open: true, fields: [
       { key: 'logos', kind: 'repeater', label: 'Logos', addLabel: '+ Add logo', min: 1, multiUpload: true,
         itemTitle: (/** @type {any} */ l, /** @type {number} */ i) => l.alt || `Logo ${i + 1}`,
@@ -48,9 +48,13 @@ export default {
   },
 
   css: `
+/* Its own container spec — wider and with its own vertical rhythm — rather than the site's
+   default .sec/.wrap (--section-y/--container/--gutter), same pattern as Hero's own .wrap. */
+.mq-sec{padding:40px 0}
+.mq-sec .wrap{max-width:1280px;padding:0 80px}
 .mq{overflow:hidden}
 .mq.is-scroll{overflow-x:auto}
-.mq-track{display:flex;gap:48px;align-items:center;justify-content:center}
+.mq-track{display:flex;gap:64px;align-items:center;justify-content:center}
 .mq.is-marquee .mq-track{justify-content:flex-start;width:max-content;
   animation:mq-scroll linear infinite;animation-duration:var(--mq-speed,30s)}
 .mq.is-marquee:hover .mq-track{animation-play-state:paused}
@@ -58,6 +62,10 @@ export default {
 .mq-item img{height:36px;width:auto;object-fit:contain}
 .mq-item .ph{height:36px;min-height:0;padding:0 14px;border-radius:6px;font-size:11px}
 @keyframes mq-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (max-width:767px){
+  .mq-sec{padding:var(--section-y) 0}
+  .mq-sec .wrap{max-width:var(--container);padding:0 var(--gutter)}
+}
 `,
 
   render(section) {
@@ -73,6 +81,6 @@ export default {
     return dynamicShell(section,
       `<div class="mq" data-marquee style="--mq-speed:${speed}s">
         <div class="mq-track" data-marquee-track>${items}</div>
-      </div>`);
+      </div>`, { className: 'mq-sec' });
   },
 };

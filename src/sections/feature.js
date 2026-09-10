@@ -1,17 +1,19 @@
 // Feature — spec doc 41. Icon size and paragraph visibility are consequences of which
-// preset is picked, not independent knobs — 64px only ever belongs to Highlighted, and a
-// missing paragraph is what DEFINES Compact rather than something layered on top of it.
-// `item_count` is the one dimension that genuinely varies independently of the preset.
+// preset is picked, not independent knobs — 64px only ever belongs to L, and a missing
+// paragraph is what DEFINES S rather than something layered on top of it. `item_count` is
+// the one dimension that genuinely varies independently of the preset.
 import { ARCHETYPE } from '../model/enums.js';
-import { blankRich, dynamicShell, esc, img, rich } from '../render/html.js';
+import { blankRich, cls, dynamicShell, esc, img, rich } from '../render/html.js';
 import { RT_BASIC, all, headerGroup, needMedia, needRich, needText, styleGroup } from './_common.js';
 
 /** The three presets (doc 41 §4.3). Selecting one is the only way `icon_size` and
- * `has_paragraph` change — there is no independent control for either. */
+ * `has_paragraph` change — there is no independent control for either. Each preset also
+ * drives the section's own heading size, so L/M/S mean the same thing for the icon and the
+ * heading above it. */
 export const PRESETS = {
-  Highlighted: { icon_size: 64, item_count: 3, has_paragraph: true },
-  Standard: { icon_size: 48, item_count: 3, has_paragraph: true },
-  Compact: { icon_size: 48, item_count: 3, has_paragraph: false },
+  L: { icon_size: 64, item_count: 3, has_paragraph: true, heading_size: 'SIZE_L' },
+  M: { icon_size: 48, item_count: 3, has_paragraph: true, heading_size: 'SIZE_M' },
+  S: { icon_size: 48, item_count: 3, has_paragraph: false, heading_size: 'SIZE_S' },
 };
 
 /** @type {import('../model/types.js').SectionType} */
@@ -22,20 +24,20 @@ export default {
   archetype: ARCHETYPE.DYNAMIC,
   group: 'intermediate',
   icon: '✦',
-  description: 'Icon + title (+ paragraph) items, in three presets: Highlighted, Standard, Compact.',
+  description: 'Icon + title (+ paragraph) items, in three presets: L, M, S.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF', size: 'SIZE_M', align: 'ALIGN_CENTER' }),
-    headerGroup({ open: false }),
+    styleGroup({ bg: '#FFFFFF' }),
+    headerGroup({ open: false, size: 'SIZE_L', align: 'ALIGN_CENTER' }),
     { title: 'Presentation', open: true, fields: [
       { key: '_preset', kind: 'preset', label: 'Preset', options: Object.keys(PRESETS).map((k) => ({ value: k, label: k })),
         applies: PRESETS,
-        help: 'Sets the icon size and layout. Highlighted and Standard show a paragraph; Compact is icon + label only — that is what makes it Compact, not a separate toggle.' },
+        help: 'Sets the icon size, heading size and layout. L and M show a paragraph; S is icon + label only — that is what makes it S, not a separate toggle.' },
       { key: 'item_count', kind: 'segmented', label: 'Items', default: 3,
         options: [{ value: 3, label: '3' }, { value: 4, label: '4' }],
-        // Highlighted is fixed at exactly 3 (doc 41 §4.3); only Standard and Compact — the
-        // two 48px presets — let the count vary. `icon_size` is what actually distinguishes
-        // them, since neither is stored as its own "which preset" flag.
+        // L is fixed at exactly 3 (doc 41 §4.3); only M and S — the two 48px presets — let
+        // the count vary. `icon_size` is what actually distinguishes them, since neither is
+        // stored as its own "which preset" flag.
         when: (/** @type {any} */ p) => Number(p.icon_size) !== 64 },
     ] },
     { title: 'Items', open: true, fields: [
@@ -51,7 +53,7 @@ export default {
   ],
 
   defaults: {
-    bg_color: '#FFFFFF', heading_size: 'SIZE_M', heading_align: 'ALIGN_CENTER',
+    bg_color: '#FFFFFF', heading_size: 'SIZE_L', heading_align: 'ALIGN_CENTER',
     section_title: 'Why discerning travellers book with us',
     subheading: '<p>Industry-leading contracts paired with white-glove concierge management.</p>',
     icon_size: 64, item_count: 3, has_paragraph: true,
@@ -79,30 +81,37 @@ export default {
   },
 
   css: `
-.ft{display:grid;gap:28px}
+/* Its own container spec, same pattern as Hero/Prices/Logo Marquee — px only here (the
+   default max-width still applies); vertical rhythm depends on the preset: L and M get
+   generous py, S (no paragraph, already the "dense" preset) gets half. */
+.ft-sec .wrap{padding-left:80px;padding-right:80px}
+.ft-sec{padding-top:80px;padding-bottom:80px}
+.ft-sec.ft-sec-compact{padding-top:40px;padding-bottom:40px}
+.ft-sec .sec-head{margin-bottom:40px}
+.ft{display:grid;gap:40px}
 .ft.n3{grid-template-columns:repeat(3,1fr)}
 .ft.n4{grid-template-columns:repeat(4,1fr)}
 
-/* Highlighted (icon 64px): vertical stack, centred when the section header is centred. */
+/* L (icon 64px): vertical stack, centred when the section header is centred. */
 .ft-item{display:flex;flex-direction:column;gap:14px}
 .sec.a-center .ft-item{align-items:center}
 
-.ft-icon{display:flex;align-items:center;justify-content:center;flex:0 0 auto;
-  background:var(--bg-light-grey);border-radius:14px}
+/* No background here — a filled icon (often semi-transparent PNG) sitting on this chip's
+   grey fill just reads as darkened/muddy. The empty-state placeholder (.ph) already paints
+   its own full-coverage background, so this box needs none of its own either way. */
+.ft-icon{display:flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:14px}
 .ft-icon img{width:100%;height:100%;object-fit:contain}
 .ft-icon .ph{width:100%;height:100%;min-height:0;font-size:10px;border-radius:14px}
 .ft-t{font-weight:var(--title-weight);font-size:18px;letter-spacing:-.01em}
 .ft-p{color:var(--ink-soft);font-size:15px}
 .ft-p p{margin:0}
 
-/* Standard (icon 48px, has a paragraph): icon left, text right, left-aligned regardless
-   of the section's own heading alignment — doc 41's three presets read as three distinct
-   layouts, not one card with a smaller icon. */
-.ft.row{gap:32px 28px}
+/* M (icon 48px, has a paragraph): icon left, text right, left-aligned regardless of the
+   section's own heading alignment — doc 41's three presets read as three distinct layouts,
+   not one card with a smaller icon. */
 .ft.row .ft-item{flex-direction:row;align-items:flex-start;text-align:left;gap:14px}
 
-/* Compact (no paragraph): icon + single-line label in a row, divided like a stat strip. */
-.ft.bullets{gap:16px 28px}
+/* S (no paragraph): icon + single-line label in a row, divided like a stat strip. */
 .ft.bullets .ft-item{flex-direction:row;align-items:center;gap:12px;text-align:left;
   padding-left:20px;border-left:1px solid var(--line)}
 .ft.bullets .ft-item:first-child{padding-left:0;border-left:0}
@@ -119,6 +128,8 @@ export default {
   .ft.bullets.n3,.ft.bullets.n4{grid-template-columns:repeat(2,1fr)}
   .ft.bullets .ft-item:nth-child(2n){padding-left:20px;border-left:1px solid var(--line)}
   .ft.bullets .ft-item:nth-child(odd){padding-left:0;border-left:0}
+  .ft-sec .wrap{padding-left:var(--gutter);padding-right:var(--gutter)}
+  .ft-sec,.ft-sec.ft-sec-compact{padding-top:var(--section-y);padding-bottom:var(--section-y)}
 }
 `,
 
@@ -141,7 +152,7 @@ export default {
           ${withText && !blankRich(it.paragraph) ? `<div class="ft-p">${rich(it.paragraph)}</div>` : ''}
         </div>
       </div>`).join('')}
-    </div>`);
+    </div>`, { className: cls('ft-sec', layout === 'bullets' && 'ft-sec-compact') });
   },
 };
 
