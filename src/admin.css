@@ -19,7 +19,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 .tb-left,.tb-right{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
 .tb-right{justify-content:flex-end}
 .tb-center{flex:0 0 auto}
-.brand{font-weight:650;letter-spacing:-.01em;margin-right:6px;white-space:nowrap}
+.tb-icon{display:flex;align-items:center;justify-content:center;width:28px;height:28px;
+  flex:0 0 auto;border:0;background:transparent;border-radius:var(--r-sm);cursor:pointer;
+  color:var(--ink-2)}
+.tb-icon:hover{background:var(--bg);color:var(--ink)}
 .page-name{color:var(--ink-2);padding:3px 8px;border-radius:var(--r-sm);cursor:pointer;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .page-name:hover{background:var(--bg)}
@@ -58,6 +61,9 @@ html[data-tips="off"] .f-tip{display:none}
 /* 20px wider than before: the settings panel now holds nested repeater rows (a price row is
    eleven fields deep) and swatch rows, and 300px made both wrap. */
 .panel-side{width:320px;border-right:1px solid var(--line)}
+/* `.panel` sets display:flex, which outranks the UA stylesheet's [hidden] rule — without
+   this the attribute would be set and the panel would stay on screen. */
+.panel-side[hidden]{display:none}
 .panel-head{flex:0 0 auto;display:flex;align-items:center;gap:6px;
   padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600;font-size:12px;
   text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
