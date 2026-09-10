@@ -38,8 +38,9 @@ export default {
   // Hero SAYS is now in one place; everything that changes how it looks is in the last two.
   fields: [
     { title: 'Content', open: true, fields: [
+      // S → M → L, the one direction every size control in the editor runs (see SIZE_OPTS).
       { key: 'title_preset', kind: 'segmented', label: 'Title size', default: 'L',
-        options: [{ value: 'L', label: 'L' }, { value: 'M', label: 'M' }, { value: 'S', label: 'S' }] },
+        options: [{ value: 'S', label: 'S' }, { value: 'M', label: 'M' }, { value: 'L', label: 'L' }] },
       { key: 'title_text', kind: 'richtext', label: 'Title', required: true, tools: RT_BASIC, singleLine: false },
       { key: 'paragraph_text', kind: 'richtext', label: 'Text', tools: RT_FULL },
 

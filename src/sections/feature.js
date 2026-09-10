@@ -10,10 +10,12 @@ import { RT_BASIC, advancedGroup, all, appearanceGroup, contentGroup, headingFie
  * `has_paragraph` change — there is no independent control for either. Each preset also
  * drives the section's own heading size, so L/M/S mean the same thing for the icon and the
  * heading above it. */
+// Declared S → M → L because the buttons are drawn in this object's key order, and every
+// size control in the editor runs small-to-large (see SIZE_OPTS in _common.js).
 export const PRESETS = {
-  L: { icon_size: 64, item_count: 3, has_paragraph: true, heading_size: 'SIZE_L' },
-  M: { icon_size: 48, item_count: 3, has_paragraph: true, heading_size: 'SIZE_M' },
   S: { icon_size: 48, item_count: 3, has_paragraph: false, heading_size: 'SIZE_S' },
+  M: { icon_size: 48, item_count: 3, has_paragraph: true, heading_size: 'SIZE_M' },
+  L: { icon_size: 64, item_count: 3, has_paragraph: true, heading_size: 'SIZE_L' },
 };
 
 /** @type {import('../model/types.js').SectionType} */

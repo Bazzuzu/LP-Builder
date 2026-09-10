@@ -9,6 +9,12 @@ import { blankRich } from '../render/html.js';
 export const RT_FULL = ['b', 'i', 's', 'color', 'ul', 'ol', 'link'];
 export const RT_BASIC = ['b', 'i', 's', 'color'];
 
+/**
+ * Every size control in the editor reads small-to-large, left to right — the same direction
+ * as the numeric segmented controls beside them (2/3/4, 3/4) and as HEADING_SIZES. Hero's
+ * title preset and Feature's presets used to run the other way, so "L" was on the left in
+ * one panel and on the right in the next.
+ */
 export const SIZE_OPTS = [
   { value: 'SIZE_S', label: 'S' }, { value: 'SIZE_M', label: 'M' }, { value: 'SIZE_L', label: 'L' },
 ];
