@@ -130,6 +130,29 @@ export function moveDown(sections, id) {
   return true;
 }
 
+/**
+ * Move a section to an explicit position — what a drag-and-drop drop resolves to, as
+ * opposed to the one-step-at-a-time `moveUp`/`moveDown`. `index` counts the target slot's
+ * OTHER sections, so it is the gap the section lands in, not a final array position.
+ * Anchors never move, and only dynamic slots accept a drop.
+ * @param {Section[]} sections @param {string} id @param {number} slot @param {number} index
+ * @returns {boolean} whether anything moved
+ */
+export function moveTo(sections, id, slot, index) {
+  const s = sections.find((x) => x.id === id);
+  if (!s || isAnchor(s) || !DYNAMIC_SLOTS.includes(slot)) return false;
+  const others = sectionsInSlot(sections, slot).filter((x) => x !== s);
+  const at = Math.max(0, Math.min(index, others.length));
+  // Already exactly there: report "nothing moved" so the caller skips an empty undo step.
+  if (s.slot_index === slot && sectionsInSlot(sections, slot).indexOf(s) === at) return false;
+  s.slot_index = slot;
+  // A half-step past the section it should follow; repack() turns that back into dense
+  // integers. -0.5 puts it before everything, which is what index 0 means.
+  s.order_in_slot = at === 0 ? -0.5 : others[at - 1].order_in_slot + 0.5;
+  repack(sections);
+  return true;
+}
+
 /** Remove a section by id. @param {Section[]} sections @param {string} id */
 export function removeSection(sections, id) {
   const i = sections.findIndex((s) => s.id === id);

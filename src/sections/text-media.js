@@ -1,7 +1,7 @@
 // Text & Media — spec doc 39. Editorial split with 0, 1 or 2 images.
 import { ARCHETYPE } from '../model/enums.js';
 import { blankRich, cls, ctaLink, dynamicShell, esc, img, rich } from '../render/html.js';
-import { ALIGN_OPTS, RT_FULL, SIZE_OPTS, all, ctaGroup, imgField, needMedia, needRich, needText, styleGroup } from './_common.js';
+import { RT_FULL, advancedGroup, all, appearanceGroup, contentGroup, ctaGroup, headingFields, imgField, mediaGroup, needMedia, needRich, needText } from './_common.js';
 
 const hasMedia = (/** @type {any} */ p) => p.media_mode !== 'No Photo';
 
@@ -16,24 +16,25 @@ export default {
   description: 'Narrative copy beside zero, one or two images, on either side.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF' }),
-    { title: 'Content', open: true, fields: [
-      { key: 'section_title', kind: 'text', label: 'Section title', required: true },
-      { key: 'paragraph', kind: 'richtext', label: 'Paragraph', required: true, tools: RT_FULL },
-      { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: 'SIZE_M', options: SIZE_OPTS },
-      { key: 'heading_align', kind: 'segmented', label: 'Heading alignment', default: 'ALIGN_LEFT', options: ALIGN_OPTS },
-    ] },
-    { title: 'Media', open: true, fields: [
+    contentGroup([
+      // The body copy is this section's whole point, so it takes the place of a subheading
+      // rather than being a second, optional line under one.
+      ...headingFields({ required: true, sub: false }),
+      { key: 'paragraph', kind: 'richtext', label: 'Text', required: true, tools: RT_FULL },
+    ]),
+    ctaGroup('cta'),
+    mediaGroup([
       { key: 'media_mode', kind: 'segmented', label: 'Images', default: '1 Photo',
         options: [{ value: 'No Photo', label: 'None' }, { value: '1 Photo', label: '1' }, { value: '2 Photos', label: '2' }] },
-      { key: 'media_side', kind: 'segmented', label: 'Media side', default: 'Right',
+      { key: 'media_side', kind: 'segmented', label: 'Side', default: 'Right',
         options: [{ value: 'Left', label: 'Left' }, { value: 'Right', label: 'Right' }],
         when: (/** @type {any} */ p) => hasMedia(p) },
       imgField('image_single', 'Image', { ratio: '1:1', when: (/** @type {any} */ p) => p.media_mode === '1 Photo' }),
       imgField('image_large', 'Large image', { when: (/** @type {any} */ p) => p.media_mode === '2 Photos' }),
       imgField('image_small', 'Small image', { when: (/** @type {any} */ p) => p.media_mode === '2 Photos' }),
-    ] },
-    ctaGroup('cta'),
+    ], { open: true }),
+    appearanceGroup({ bg: '#FFFFFF' }),
+    advancedGroup(),
   ],
 
   defaults: {

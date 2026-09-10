@@ -3,7 +3,7 @@ import { el } from '../util.js';
 let closeCurrent = null;
 
 /**
- * @typedef {{ label: string, primary?: boolean, onClick?: () => any }} ModalAction
+ * @typedef {{ label: string, primary?: boolean, danger?: boolean, onClick?: () => any }} ModalAction
  */
 
 /**
@@ -27,7 +27,7 @@ export function openModal({ title, body, actions = [], narrow = false, onClose }
   if (actions.length) {
     const foot = el('.modal-foot');
     for (const a of actions) {
-      foot.append(el('button.btn' + (a.primary ? '.btn-primary' : ''), {
+      foot.append(el('button.btn' + (a.primary ? '.btn-primary' : '') + (a.danger ? '.btn-destructive' : ''), {
         type: 'button',
         onclick: () => { if (a.onClick?.() !== false) closeModal(); },
       }, a.label));

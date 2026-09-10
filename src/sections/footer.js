@@ -14,12 +14,9 @@ export default {
   // same-background divider (render/page.js) can compare it against its neighbours.
   fixedBg: '#111111',
 
-  fields: [
-    { title: 'Footer', open: true, fields: [
-      { key: '_global_note', kind: 'note', label: '',
-        text: 'Footer is a site-wide component. To change links or legal text, go to Global Settings > Footer.' },
-    ] },
-  ],
+  // No per-page settings at all — see the note in subscription.js.
+  fields: [],
+  globalHint: 'Navigation, legal text, accreditations and social links are the same on every page.',
 
   defaults: {},
 

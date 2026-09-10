@@ -15,12 +15,11 @@ export default {
   // same-background divider (render/page.js) can compare it against its neighbours.
   fixedBg: '#FFFFFF',
 
-  fields: [
-    { title: 'Subscription', open: true, fields: [
-      { key: '_global_note', kind: 'note', label: '',
-        text: 'Copy and form behaviour are standardised site-wide. Edit them in Global Settings > Subscription.' },
-    ] },
-  ],
+  // Nothing about this block is per-page, so it declares no fields: the inspector says so
+  // in one card with a button, instead of a collapsible group whose only content is a
+  // sentence explaining that the group is empty.
+  fields: [],
+  globalHint: 'Its copy, the form and the photograph are standardised site-wide.',
 
   defaults: {},
 

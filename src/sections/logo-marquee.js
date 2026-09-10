@@ -1,7 +1,7 @@
 // Logo Marquee — spec doc 40. Static row that becomes a ticker only when it overflows.
 import { ARCHETYPE, BG_LIGHT_GREY, LEVEL } from '../model/enums.js';
 import { attr, dynamicShell, esc, img } from '../render/html.js';
-import { headerGroup, styleGroup } from './_common.js';
+import { advancedGroup, appearanceGroup, contentGroup, headingFields } from './_common.js';
 
 /** @type {import('../model/types.js').SectionType} */
 export default {
@@ -14,8 +14,7 @@ export default {
   description: 'Partner logos. Centred when they fit, an infinite ticker when they do not.',
 
   fields: [
-    styleGroup({ bg: BG_LIGHT_GREY }),
-    headerGroup({ open: false, size: 'SIZE_S', align: 'ALIGN_CENTER' }),
+    contentGroup(headingFields({ size: 'SIZE_S', align: 'ALIGN_CENTER' })),
     { title: 'Logos', open: true, fields: [
       { key: 'logos', kind: 'repeater', label: 'Logos', addLabel: '+ Add logo', min: 1, multiUpload: true,
         itemTitle: (/** @type {any} */ l, /** @type {number} */ i) => l.alt || `Logo ${i + 1}`,
@@ -23,11 +22,14 @@ export default {
         item: { fields: [
           { key: 'file', kind: 'image', label: 'Logo', decorative: true },
           { key: 'alt', kind: 'text', label: 'Alt text', help: 'Leave empty for a purely decorative mark.' },
-          { key: 'href', kind: 'text', label: 'Link (optional)' },
+          { key: 'href', kind: 'text', label: 'Link', help: 'Optional.' },
         ] } },
+    ] },
+    appearanceGroup({ bg: BG_LIGHT_GREY, fields: [
       { key: 'speed', kind: 'range', label: 'Ticker speed', default: 30, min: 10, max: 90, unit: 's',
         help: 'Seconds per full cycle. Only applies once the ticker activates.' },
-    ] },
+    ] }),
+    advancedGroup(),
   ],
 
   defaults: {

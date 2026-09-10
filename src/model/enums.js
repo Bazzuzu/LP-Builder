@@ -144,11 +144,34 @@ export const BG_LIGHT_GREY = '#0000000A';
 /** Warm sand, fully opaque. */
 export const BG_LIGHT_BRONZE = '#F7F2EE';
 
+/** The brand's accent, used for badges and buttons. */
+export const BRONZE = '#B8876E';
+
 /** Background presets offered first in every dynamic section. SYS-01 §2. */
 export const BG_PRESETS = [
   { value: '#FFFFFF', label: 'White', token: 'BG_WHITE' },
   { value: BG_LIGHT_GREY, label: 'Light grey', token: 'BG_LIGHT_GREY' },
   { value: BG_LIGHT_BRONZE, label: 'Sand', token: 'BG_LIGHT_BRONZE' },
+];
+
+// Every colour field offers the palette it is plausibly choosing from, so the free picker
+// is a deliberate detour rather than the only road. Three sets cover the whole editor.
+/** Accent-bearing surfaces: badges, buttons. */
+export const ACCENT_PRESETS = [
+  { value: BRONZE, label: 'Bronze' },
+  { value: '#000000', label: 'Black' },
+  { value: '#FFFFFF', label: 'White' },
+];
+/** Text and foreground marks. */
+export const INK_PRESETS = [
+  { value: '#FFFFFF', label: 'White' },
+  { value: INK, label: 'Ink' },
+  { value: BRONZE, label: 'Bronze' },
+];
+/** Scrims laid over a photograph — only ever a neutral. */
+export const SCRIM_PRESETS = [
+  { value: '#000000', label: 'Black' },
+  { value: '#FFFFFF', label: 'White' },
 ];
 
 export const HEADING_SIZES = /** @type {const} */ (['SIZE_S', 'SIZE_M', 'SIZE_L']);

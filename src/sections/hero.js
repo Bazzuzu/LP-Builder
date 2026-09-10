@@ -1,7 +1,7 @@
 // Hero — spec doc 30. Fixed anchor, slot 00.
 // Deliberately outside the design-token system (SYS-01 §1.1): its own theme engine,
 // background media and typography presets.
-import { ARCHETYPE, CABIN_CLASSES, INK } from '../model/enums.js';
+import { ACCENT_PRESETS, ARCHETYPE, BRONZE, CABIN_CLASSES, INK, INK_PRESETS, SCRIM_PRESETS } from '../model/enums.js';
 import { assetUrl } from '../store/assets.js';
 import { attr, blankRich, cls, esc, img, rich, style } from '../render/html.js';
 import { RT_BASIC, RT_FULL, all, imgField, needMedia, needRich, needText } from './_common.js';
@@ -17,6 +17,11 @@ const inlineBadgeOn = (/** @type {any} */ p, /** @type {any} */ get) =>
 
 /** Fallback fill when no background image is uploaded (doc 30 §5.3) — theme-dependent. */
 const THEME_FALLBACK = { Dark: INK, Light: '#F7F2EE' };
+/** Both themes' fallbacks offered as swatches, so switching between them is one click. */
+const FALLBACK_PRESETS = [
+  { value: THEME_FALLBACK.Dark, label: 'Ink (Dark theme)' },
+  { value: THEME_FALLBACK.Light, label: 'Sand (Light theme)' },
+];
 
 /** @type {import('../model/types.js').SectionType} */
 export default {
@@ -27,31 +32,34 @@ export default {
   icon: '▤',
   description: 'Above-the-fold anchor: value proposition, featured price and the lead form.',
 
+  // Four groups, Content first. Theme used to open the panel — a control set once per page,
+  // sitting above the words the author came here to write — and the price logos and the CTA
+  // label were two more groups to open for two more fields. Everything that changes what the
+  // Hero SAYS is now in one place; everything that changes how it looks is in the last two.
   fields: [
-    { title: 'Theme', open: true, fields: [
-      { key: 'theme_mode', kind: 'segmented', label: 'Theme', default: 'Dark',
-        options: [{ value: 'Light', label: 'Light' }, { value: 'Dark', label: 'Dark' }],
-        help: 'Drives the header logo, accreditation badges, nav colours and default text colour.',
-        // Doc 30 §5.6: a colour still sitting at the OTHER theme's default re-defaults when
-        // the theme switches; a colour the admin actually chose is left alone.
-        onChange: (value, ctx) => {
-          const other = value === 'Dark' ? 'Light' : 'Dark';
-          const current = ctx.get('desktop_fallback_color');
-          if (current == null || current === THEME_FALLBACK[other]) {
-            ctx.set('desktop_fallback_color', THEME_FALLBACK[value]);
-          }
-        } },
-    ] },
+    { title: 'Content', open: true, fields: [
+      { key: 'title_preset', kind: 'segmented', label: 'Title size', default: 'L',
+        options: [{ value: 'L', label: 'L' }, { value: 'M', label: 'M' }, { value: 'S', label: 'S' }] },
+      { key: 'title_text', kind: 'richtext', label: 'Title', required: true, tools: RT_BASIC, singleLine: false },
+      { key: 'paragraph_text', kind: 'richtext', label: 'Text', tools: RT_FULL },
 
-    { title: 'Background', open: false, fields: [
-      imgField('desktop_bg_image', 'Desktop background', { hint: 'PNG, JPG or WebP.', decorative: true }),
-      { key: 'desktop_fallback_color', kind: 'color', label: 'Desktop fallback', default: THEME_FALLBACK.Dark,
-        help: 'Used when no image is uploaded. Dark theme defaults to ink, Light theme to sand.' },
-      { key: 'desktop_overlay_color', kind: 'color', label: 'Desktop overlay', default: '#000000' },
-      { key: 'desktop_overlay_opacity', kind: 'range', label: 'Desktop overlay opacity', default: 50, min: 0, max: 100, unit: '%' },
-      imgField('mobile_bg_image', 'Mobile background', { hint: 'Falls back to the desktop image when empty.', decorative: true }),
-      { key: 'mobile_overlay_color', kind: 'color', label: 'Mobile overlay', default: '#000000' },
-      { key: 'mobile_overlay_opacity', kind: 'range', label: 'Mobile overlay opacity', default: 50, min: 0, max: 100, unit: '%' },
+      { key: 'price_top_label', kind: 'richtext', label: 'Label above price', tools: RT_BASIC, inline: true },
+      { key: 'price_main_value', kind: 'text', label: 'Price', required: true, placeholder: '1,234',
+        help: 'Digits and separators only — the currency symbol comes from the page.' },
+      { key: 'price_bottom_label', kind: 'richtext', label: 'Label below price', tools: RT_BASIC, inline: true },
+      { key: '_footnote_note', kind: 'note', label: '',
+        text: 'The price footnote/disclaimer lives in the Footer\'s legal text (Global Settings > Footer) — one disclaimer, shared by every page, instead of one per Hero.' },
+
+      // The two logo slots sat in a group of their own, which meant opening a second panel
+      // to put a carrier mark next to a price that is edited three fields above.
+      { key: 'has_price_aside_logo', kind: 'toggle', label: 'Logo beside the price', default: false },
+      imgField('price_aside_logo', 'Aside logo', { ratio: '2:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_aside_logo }),
+      { key: 'has_price_bottom_logo', kind: 'toggle', label: 'Logo under the price', default: false },
+      imgField('price_bottom_logo', 'Bottom logo', { ratio: '10:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_bottom_logo }),
+
+      { key: 'cta_button_text', kind: 'text', label: 'Lead form button', default: 'Check Your Price' },
+      { key: '_form_note', kind: 'note', label: '',
+        text: 'The form fields are fixed by the lead contract (doc 21) and shared with the modal.' },
     ] },
 
     { title: 'Eyebrow', open: false, fields: [
@@ -76,7 +84,8 @@ export default {
       { key: 'has_inline_badge', kind: 'toggle', label: 'Inline badge', default: false, when: onEyebrowAny('Text', 'Timer') },
       imgField('inline_badge_icon', 'Badge icon', { decorative: true, when: inlineBadgeOn }),
       { key: 'inline_badge_label', kind: 'text', label: 'Badge label', required: true, when: inlineBadgeOn },
-      { key: 'inline_badge_color', kind: 'color', label: 'Badge colour', default: '#B8876E', when: inlineBadgeOn },
+      { key: 'inline_badge_color', kind: 'color', label: 'Badge colour', default: BRONZE,
+        presets: ACCENT_PRESETS, when: inlineBadgeOn },
 
       // Logo
       imgField('logo_image', 'Logo', { hint: 'Ratio 10:1, e.g. 560×56.', decorative: true, when: onEyebrow('Logo') }),
@@ -84,36 +93,39 @@ export default {
       // Standalone Badge
       imgField('badge_icon', 'Badge icon', { decorative: true, when: onEyebrow('Badge') }),
       { key: 'badge_label', kind: 'text', label: 'Badge label', required: true, when: onEyebrow('Badge') },
-      { key: 'badge_color', kind: 'color', label: 'Badge colour', default: '#B8876E', when: onEyebrow('Badge') },
+      { key: 'badge_color', kind: 'color', label: 'Badge colour', default: BRONZE,
+        presets: ACCENT_PRESETS, when: onEyebrow('Badge') },
     ] },
 
-    { title: 'Content', open: true, fields: [
-      { key: 'title_preset', kind: 'segmented', label: 'Title size', default: 'L',
-        options: [{ value: 'L', label: 'L' }, { value: 'M', label: 'M' }, { value: 'S', label: 'S' }] },
-      { key: 'title_text', kind: 'richtext', label: 'Title', required: true, tools: RT_BASIC, singleLine: false },
-      { key: 'paragraph_text', kind: 'richtext', label: 'Paragraph', tools: RT_FULL },
-
-      { key: 'price_top_label', kind: 'richtext', label: 'Label above price', tools: RT_BASIC, inline: true },
-      { key: 'price_main_value', kind: 'text', label: 'Price', required: true, placeholder: '1,234',
-        help: 'Digits and separators only — the currency symbol comes from the page.' },
-      { key: 'price_bottom_label', kind: 'richtext', label: 'Label below price', tools: RT_BASIC, inline: true },
-      { key: '_footnote_note', kind: 'note', label: '',
-        text: 'The price footnote/disclaimer lives in the Footer\'s legal text (Global Settings > Footer) — one disclaimer, shared by every page, instead of one per Hero.' },
+    // The backgrounds and the scrims over them: one subject, so one group. The overlay is
+    // a property of the photograph, not a separate styling decision made elsewhere.
+    { title: 'Media', open: false, fields: [
+      imgField('desktop_bg_image', 'Desktop background', { hint: 'PNG, JPG or WebP.', decorative: true }),
+      { key: 'desktop_overlay_color', kind: 'color', label: 'Desktop overlay', default: '#000000', presets: SCRIM_PRESETS },
+      { key: 'desktop_overlay_opacity', kind: 'range', label: 'Desktop overlay opacity', default: 50, min: 0, max: 100, unit: '%' },
+      imgField('mobile_bg_image', 'Mobile background', { hint: 'Falls back to the desktop image when empty.', decorative: true }),
+      { key: 'mobile_overlay_color', kind: 'color', label: 'Mobile overlay', default: '#000000', presets: SCRIM_PRESETS },
+      { key: 'mobile_overlay_opacity', kind: 'range', label: 'Mobile overlay opacity', default: 50, min: 0, max: 100, unit: '%' },
     ] },
 
-    { title: 'Price logos', open: false, fields: [
-      { key: 'has_price_aside_logo', kind: 'toggle', label: 'Logo beside the price', default: false },
-      imgField('price_aside_logo', 'Aside logo', { ratio: '2:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_aside_logo }),
-      { key: 'has_price_bottom_logo', kind: 'toggle', label: 'Logo under the price', default: false },
-      imgField('price_bottom_logo', 'Bottom logo', { ratio: '10:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_bottom_logo }),
-    ] },
-
-    { title: 'Lead form', open: false, fields: [
-      { key: 'cta_button_text', kind: 'text', label: 'Button label', default: 'Check Your Price' },
-      { key: 'cta_button_color', kind: 'color', label: 'Button colour', default: '#B8876E' },
-      { key: 'cta_button_text_color', kind: 'color', label: 'Button text colour', default: '#FFFFFF' },
-      { key: '_form_note', kind: 'note', label: '',
-        text: 'The form fields are fixed by the lead contract (doc 21) and shared with the modal.' },
+    { title: 'Appearance', open: false, fields: [
+      { key: 'theme_mode', kind: 'segmented', label: 'Theme', default: 'Dark',
+        options: [{ value: 'Light', label: 'Light' }, { value: 'Dark', label: 'Dark' }],
+        help: 'Drives the header logo, accreditation badges, nav colours and default text colour.',
+        // Doc 30 §5.6: a colour still sitting at the OTHER theme's default re-defaults when
+        // the theme switches; a colour the admin actually chose is left alone.
+        onChange: (value, ctx) => {
+          const other = value === 'Dark' ? 'Light' : 'Dark';
+          const current = ctx.get('desktop_fallback_color');
+          if (current == null || current === THEME_FALLBACK[other]) {
+            ctx.set('desktop_fallback_color', THEME_FALLBACK[value]);
+          }
+        } },
+      { key: 'desktop_fallback_color', kind: 'color', label: 'Background fallback',
+        default: THEME_FALLBACK.Dark, presets: FALLBACK_PRESETS,
+        help: 'Used when no image is uploaded. Dark theme defaults to ink, Light theme to sand.' },
+      { key: 'cta_button_color', kind: 'color', label: 'Button colour', default: BRONZE, presets: ACCENT_PRESETS },
+      { key: 'cta_button_text_color', kind: 'color', label: 'Button text colour', default: '#FFFFFF', presets: INK_PRESETS },
     ] },
   ],
 

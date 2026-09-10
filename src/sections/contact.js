@@ -15,12 +15,9 @@ export default {
   // same-background divider (render/page.js) can compare it against its neighbours.
   fixedBg: '#FFFFFF',
 
-  fields: [
-    { title: 'Contact', open: true, fields: [
-      { key: '_global_note', kind: 'note', label: '',
-        text: 'Contact details are managed centrally. Edit them in Global Settings > Contact.' },
-    ] },
-  ],
+  // No per-page settings at all — see the note in subscription.js.
+  fields: [],
+  globalHint: 'Concierge phone numbers, email and the copy around them are managed centrally.',
 
   defaults: {},
 

@@ -4,7 +4,7 @@
 // picker — every colour below is scoped to `.trust` rather than the shared light-mode tokens.
 import { ARCHETYPE, LEVEL } from '../model/enums.js';
 import { attr, cls, esc, img, rich } from '../render/html.js';
-import { headerGroup } from './_common.js';
+import { contentGroup, headingFields } from './_common.js';
 
 /** @type {import('../model/types.js').SectionType} */
 export default {
@@ -19,19 +19,20 @@ export default {
   fixedBg: '#0B0B0B',
 
   fields: [
-    headerGroup({ titleLabel: 'Headline' }),
-    { title: 'Display', open: true, fields: [
-      { key: 'layout_mode', kind: 'segmented', label: 'Density', default: 'Extended',
-        options: [{ value: 'Extended', label: 'Extended' }, { value: 'Compact', label: 'Compact' }],
-        help: 'Compact is the low-profile mode for content-dense pages.' },
+    contentGroup(headingFields()),
+    { title: 'Blocks', open: true, fields: [
       { key: 'show_trustpilot_feed', kind: 'toggle', label: 'Trustpilot feed', default: true },
       { key: 'show_celebrity_review', kind: 'toggle', label: 'Video & VIP testimonial', default: true },
       { key: 'show_accreditation_badges', kind: 'toggle', label: 'Accreditation badges', default: true,
         help: 'Hidden in Compact regardless of this toggle, to keep the condensed layout short.' },
-      { key: '_global_note', kind: 'note', label: '',
-        text: 'Reviews, ratings, endorsements and badges are managed centrally in Global Settings > Trust.' },
+    ] },
+    { title: 'Appearance', open: false, fields: [
+      { key: 'layout_mode', kind: 'segmented', label: 'Density', default: 'Extended',
+        options: [{ value: 'Extended', label: 'Extended' }, { value: 'Compact', label: 'Compact' }],
+        help: 'Compact is the low-profile mode for content-dense pages.' },
     ] },
   ],
+  globalHint: 'Reviews, ratings, endorsements and badges are managed centrally.',
 
   defaults: {
     section_title: 'Trusted by Thousands of Business Class Travelers Worldwide',

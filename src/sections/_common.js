@@ -16,40 +16,81 @@ export const ALIGN_OPTS = [
   { value: 'ALIGN_LEFT', label: 'Left' }, { value: 'ALIGN_CENTER', label: 'Center' },
 ];
 
-/**
- * The universal controls of a dynamic section (11_ABSTRACT §4.2) plus the in-page anchor.
- * `scope: 'section'` marks a field the inspector writes onto the Section itself rather than
- * into `props`. Heading size/alignment live in headerGroup — they're about the header
- * content, not the section's own background/anchor.
- * @param {{ bg?: string }} [defaults]
+/*
+ * ---------------------------------------------------------------- grouping
+ *
+ * Every section's settings panel is built from the same four groups, in the same order:
+ *
+ *   Content     what the section says            open
+ *   Media       the pictures                     closed
+ *   Appearance  how it looks                     closed
+ *   Advanced    the in-page anchor               closed
+ *
+ * A section may insert its own group between Content and Media when it has a body of
+ * repeating content of its own (Rows, Items, Facts, Logos, Cards) — that is the only
+ * licensed exception, and it is always still content.
+ *
+ * The order is the manager's priority order, not the data model's: the group opened on
+ * arrival is the one holding the words, and styling never sits between two content fields.
  */
-export const styleGroup = ({ bg = '#FFFFFF' } = {}) => ({
-  title: 'Section style',
+export const GROUP = {
+  CONTENT: 'Content',
+  MEDIA: 'Media',
+  APPEARANCE: 'Appearance',
+  ADVANCED: 'Advanced',
+};
+
+/**
+ * A section header's own fields — the title, its supporting line, and how big and where
+ * they sit. Returned as a plain array rather than a group of its own: a header IS content,
+ * and giving it a second panel only made the author open two groups to write one sentence.
+ * @param {{ titleLabel?: string, required?: boolean, subLabel?: string, subHelp?: string,
+ *           sub?: boolean, size?: string, align?: string }} [opts]
+ */
+export const headingFields = ({ titleLabel = 'Title', required = false, subLabel = 'Subtitle',
+  subHelp = 'Hidden when empty.', sub = true, size = 'SIZE_M', align = 'ALIGN_LEFT' } = {}) => [
+  { key: 'section_title', kind: 'text', label: titleLabel, required,
+    help: required ? undefined : 'Hidden when empty.' },
+  ...(sub ? [{ key: 'subheading', kind: 'richtext', label: subLabel, tools: RT_FULL, help: subHelp }] : []),
+  { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: size, options: SIZE_OPTS },
+  { key: 'heading_align', kind: 'segmented', label: 'Alignment', default: align, options: ALIGN_OPTS },
+];
+
+/** @param {any[]} fields @param {{ open?: boolean }} [opts] */
+export const contentGroup = (fields, { open = true } = {}) => ({ title: GROUP.CONTENT, open, fields });
+
+/** @param {any[]} fields @param {{ open?: boolean }} [opts] */
+export const mediaGroup = (fields, { open = false } = {}) => ({ title: GROUP.MEDIA, open, fields });
+
+/**
+ * Background, and whatever else changes how the section looks rather than what it says.
+ * The test for this group is exactly that: if a control alters the words, it is Content.
+ * @param {{ bg?: string, fields?: any[] }} [opts]
+ */
+export const appearanceGroup = ({ bg = '#FFFFFF', fields = [] } = {}) => ({
+  title: GROUP.APPEARANCE,
   open: false,
   fields: [
     { key: 'bg_color', kind: 'color', label: 'Background', default: bg, presets: BG_PRESETS, alpha: true },
-    { key: 'anchor_id', kind: 'text', label: 'Anchor id',
-      scope: /** @type {'section'} */ ('section'), placeholder: 'e.g. deals',
-      help: 'Optional. Lets a CTA link to this section with #anchor.' },
+    ...fields,
   ],
 });
 
 /**
- * Optional section header. Hidden on the page when both title and subheading are empty.
- * Heading size/alignment sit here rather than in styleGroup — they shape the header itself.
- * @param {{ open?: boolean, titleLabel?: string, required?: boolean, size?: string, align?: string }} [opts]
+ * The in-page anchor: last, closed, and out of the way. It is the one field here written
+ * for a developer rather than an author, and it used to sit beside Background — where an
+ * author looking for the background colour had to read past it every time.
+ * `scope: 'section'` marks a field the inspector writes onto the Section itself, not props.
+ * @param {any[]} [fields]
  */
-export const headerGroup = ({ open = true, titleLabel = 'Section title', required = false,
-  size = 'SIZE_M', align = 'ALIGN_LEFT' } = {}) => ({
-  title: 'Header',
-  open,
+export const advancedGroup = (fields = []) => ({
+  title: GROUP.ADVANCED,
+  open: false,
   fields: [
-    { key: 'section_title', kind: 'text', label: titleLabel, required,
-      help: required ? undefined : 'Hidden when empty.' },
-    { key: 'subheading', kind: 'richtext', label: 'Subheading', tools: RT_FULL,
-      help: 'Hidden when empty.' },
-    { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: size, options: SIZE_OPTS },
-    { key: 'heading_align', kind: 'segmented', label: 'Heading alignment', default: align, options: ALIGN_OPTS },
+    { key: 'anchor_id', kind: 'text', label: 'Anchor id',
+      scope: /** @type {'section'} */ ('section'), placeholder: 'e.g. deals',
+      help: 'Optional. Lets a CTA link to this section with #anchor.' },
+    ...fields,
   ],
 });
 
@@ -57,14 +98,16 @@ export const headerGroup = ({ open = true, titleLabel = 'Section title', require
  * A CTA button. `toggle: false` makes the button unconditional.
  * @param {string} [key] @param {{ title?: string, toggle?: boolean, label?: string, href?: string }} [opts]
  */
-export const ctaGroup = (key = 'cta', { title = 'CTA button', toggle = true, label = 'Learn more', href = '#lead-modal' } = {}) => ({
+export const ctaGroup = (key = 'cta', { title = 'Button', toggle = true, label = 'Learn more', href = '#lead-modal' } = {}) => ({
   title,
   open: false,
   fields: [
+    // Labels are bare inside a group already called "Button" — "Button label" in the
+    // "Button" group is the panel telling the author twice where they are.
     ...(toggle ? [{ key: `${key}.on`, kind: 'toggle', label: 'Show button', default: false }] : []),
-    { key: `${key}.label`, kind: 'text', label: 'Button label', default: label,
+    { key: `${key}.label`, kind: 'text', label: 'Label', default: label,
       when: (/** @type {any} */ p, /** @type {any} */ get) => !toggle || get(`${key}.on`) },
-    { key: `${key}.href`, kind: 'text', label: 'Button URL', default: href,
+    { key: `${key}.href`, kind: 'text', label: 'Link', default: href,
       help: 'Relative path, absolute URL, or #lead-modal to open the lead form.',
       when: (/** @type {any} */ p, /** @type {any} */ get) => !toggle || get(`${key}.on`) },
   ],

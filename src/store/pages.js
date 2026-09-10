@@ -207,8 +207,8 @@ export function addSection(key, { slot = DYNAMIC_SLOTS[0], props = {}, select: s
   return ok ? s.id : null;
 }
 
-/** @param {string} id */
-export function duplicateSection(id) {
+/** @param {string} id @param {{ select?: boolean }} [opts] */
+export function duplicateSection(id, { select: sel = true } = {}) {
   const src = section(id);
   if (!src) return null;
   const copy = { ...clone(src), id: uid('sec'), created_at: Date.now(), updated_at: Date.now() };
@@ -216,7 +216,7 @@ export function duplicateSection(id) {
     if (!d) return false;
     slots.insertAfter(d.sections, copy, id);
   });
-  if (ok) select(copy.id);
+  if (ok && sel) select(copy.id);
   return ok ? copy.id : null;
 }
 
@@ -233,6 +233,15 @@ export function moveSection(id, dir) {
     if (!d) return false;
     return dir === 'up' ? slots.moveUp(d.sections, id) : slots.moveDown(d.sections, id);
   });
+}
+
+/**
+ * Drop a dragged section into an explicit gap. `index` counts the target slot's other
+ * sections. Returns false — leaving history untouched — when the drop changes nothing.
+ * @param {string} id @param {number} slot @param {number} index
+ */
+export function moveSectionTo(id, slot, index) {
+  return commit(({ doc: d }) => (d ? slots.moveTo(d.sections, id, slot, index) : false));
 }
 
 /** @param {string} id @param {boolean} [visible] */

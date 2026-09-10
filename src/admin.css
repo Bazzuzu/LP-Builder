@@ -46,7 +46,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 /* ---------- workspace ---------- */
 .workspace{flex:1;display:flex;min-height:0}
 .panel{flex:0 0 auto;background:var(--panel);display:flex;flex-direction:column;min-height:0}
-.panel-side{width:300px;border-right:1px solid var(--line)}
+/* 20px wider than before: the settings panel now holds nested repeater rows (a price row is
+   eleven fields deep) and swatch rows, and 300px made both wrap. */
+.panel-side{width:320px;border-right:1px solid var(--line)}
 .panel-head{flex:0 0 auto;display:flex;align-items:center;gap:6px;
   padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600;font-size:12px;
   text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
@@ -73,31 +75,65 @@ button,input,select,textarea{font:inherit;color:inherit}
 .stage[data-zoom="75"] #preview{width:133.3333%;height:133.3333%;transform:scale(.75)}
 .stage[data-zoom="50"] #preview{width:200%;height:200%;transform:scale(.5)}
 
-/* ---------- outline ---------- */
-.ol-group{margin:2px 0 8px}
-.ol-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);
-  padding:6px 8px 2px}
-.ol-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:var(--r-sm);
-  cursor:pointer;user-select:none;border:1px solid transparent}
+/* ---------- page structure ---------- */
+/* Quiet at rest: one row per section, the reorder grip and the actions button fading in
+   under the pointer. A list of sections should read as the page, not as a control panel. */
+.ol-item{position:relative;display:flex;align-items:center;gap:7px;
+  padding:6px 4px 6px 2px;border-radius:var(--r-sm);cursor:pointer;user-select:none}
 .ol-item:hover{background:var(--bg)}
-.ol-item.sel{background:var(--sand);border-color:#e6d9cd}
-.ol-item.invalid .ol-name{color:var(--danger)}
-.ol-item.hidden-sec .ol-name{opacity:.45;text-decoration:line-through}
-.ol-item.drag-over{border-top:2px solid var(--accent)}
-.ol-item.dragging{opacity:.35}
-.ol-icon{width:16px;text-align:center;color:var(--ink-3);flex:0 0 auto}
-.ol-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ol-badge{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);
-  border:1px solid var(--line-2);border-radius:3px;padding:0 4px}
-.ol-actions{display:none;gap:2px}
-.ol-item:hover .ol-actions,.ol-item.sel .ol-actions{display:flex}
-.ol-actions button{border:0;background:transparent;cursor:pointer;color:var(--ink-3);
-  padding:1px 4px;border-radius:4px;line-height:1}
-.ol-actions button:hover{background:var(--line);color:var(--ink)}
-.ol-slot{margin:2px 0;padding:5px 8px;border:1px dashed var(--line-2);border-radius:var(--r-sm);
-  color:var(--ink-3);font-size:11.5px;cursor:pointer;text-align:center}
-.ol-slot:hover{border-color:var(--accent);color:var(--accent);background:var(--sand)}
-.ol-slot.drag-over{border-color:var(--accent);background:var(--sand)}
+.ol-item.sel{background:var(--sand)}
+
+.ol-grip{flex:0 0 12px;text-align:center;line-height:1;font-size:11px;cursor:grab;
+  color:transparent;transition:color .12s}
+.ol-item:hover .ol-grip{color:var(--line-2)}
+.ol-pin,.ol-item:hover .ol-pin{display:flex;align-items:center;justify-content:center;
+  color:var(--ink-3);cursor:default;opacity:.5}
+
+.ol-icon{flex:0 0 16px;text-align:center;color:var(--ink-3)}
+.ol-text{flex:1;min-width:0}
+.ol-title,.ol-sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ol-title{line-height:1.35}
+.ol-sub{color:var(--ink-3);font-size:11px;line-height:1.35}
+.ol-item.is-hidden .ol-title{color:var(--ink-3);text-decoration:line-through}
+.ol-item.is-hidden .ol-icon,.ol-item.is-hidden .ol-sub{opacity:.5}
+
+.ol-flags{flex:0 0 auto;display:flex;align-items:center;gap:5px;color:var(--ink-3)}
+/* A count, not a colour wash: "3 things to fix here" is actionable, a red name is not. */
+.ol-count{min-width:16px;height:16px;padding:0 4px;border-radius:8px;font-size:10px;
+  font-weight:650;display:inline-flex;align-items:center;justify-content:center}
+.ol-count.blocking{background:var(--danger);color:#fff}
+.ol-count.minor{background:#fdf0d8;color:var(--warn)}
+
+.ol-more{flex:0 0 auto;visibility:hidden;border:0;background:transparent;cursor:pointer;
+  color:var(--ink-3);padding:1px 5px;border-radius:5px;line-height:1;font-size:15px}
+.ol-item:hover .ol-more,.ol-item.sel .ol-more{visibility:visible}
+.ol-more:hover{background:var(--line);color:var(--ink)}
+
+.ol-item.dragging{opacity:.4}
+.ol-item.drop-before{box-shadow:inset 0 2px 0 var(--accent)}
+.ol-item.drop-after{box-shadow:inset 0 -2px 0 var(--accent)}
+
+/* The insertion point doubles as the zone boundary — the only visible reason a section
+   cannot be dragged past a pinned one. Always labelled, never loud. */
+.ol-ins{position:relative;height:24px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer}
+.ol-ins::before{content:"";position:absolute;left:6px;right:6px;height:1px;background:var(--line)}
+.ol-ins span{position:relative;background:var(--panel);padding:0 7px;font-size:11px;
+  color:var(--ink-3);transition:color .12s}
+.ol-ins:hover span,.ol-ins.drop-on span{color:var(--accent)}
+.ol-ins:hover::before,.ol-ins.drop-on::before{background:var(--accent)}
+.ol-ins.drop-on::before{height:2px}
+
+/* ---------- popup menu ---------- */
+.menu{position:fixed;z-index:60;min-width:176px;padding:4px;display:flex;flex-direction:column;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.menu button{border:0;background:transparent;text-align:left;cursor:pointer;
+  padding:6px 10px;border-radius:5px;color:var(--ink);font-size:12.5px}
+.menu button:hover{background:var(--bg)}
+.menu button.danger{color:var(--danger)}
+.menu button.danger:hover{background:#fef2f2}
+.menu button[disabled]{opacity:.4;pointer-events:none}
+.menu-sep{height:1px;background:var(--line);margin:4px 6px}
 
 /* ---------- inspector ---------- */
 .insp-empty{padding:24px 12px;text-align:center;color:var(--ink-3);line-height:1.6}
@@ -151,9 +187,16 @@ textarea.inp{resize:vertical;min-height:60px}
   linear-gradient(45deg,#ddd 25%,transparent 25%,transparent 75%,#ddd 75%);
   background-size:10px 10px;background-position:0 0,5px 5px;position:relative;overflow:hidden}
 .color-sw span{position:absolute;inset:0}
-.color-presets{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
-.color-presets button{width:20px;height:20px;border-radius:4px;border:1px solid var(--line-2);cursor:pointer}
+.color-presets{display:flex;gap:5px;flex-wrap:wrap}
+.color-presets button{width:24px;height:24px;border-radius:5px;border:1px solid var(--line-2);cursor:pointer}
 .color-presets button.on{outline:2px solid var(--accent);outline-offset:1px}
+.color-disc>summary{list-style:none;cursor:pointer;color:var(--ink-3);font-size:11px;
+  margin-top:6px;user-select:none;width:max-content}
+.color-disc>summary::-webkit-details-marker{display:none}
+.color-disc>summary::before{content:"▸";display:inline-block;margin-right:5px}
+.color-disc[open]>summary::before{content:"▾"}
+.color-disc>summary:hover{color:var(--ink-2)}
+.color-custom{margin-top:5px}
 .alpha-row{display:flex;align-items:center;gap:6px;margin-top:5px}
 .alpha-row input[type=range]{flex:1}
 
@@ -185,10 +228,16 @@ textarea.inp{resize:vertical;min-height:60px}
 /* ---------- rich text ---------- */
 .rt{position:relative;border:1px solid var(--line-2);border-radius:var(--r-sm);overflow:hidden}
 .rt.rt-pop-open{overflow:visible}
-.rt-bar{display:flex;flex-wrap:wrap;gap:1px;padding:3px;background:var(--bg);border-bottom:1px solid var(--line)}
+/* The toolbar stays in place — a formattable field should look formattable — but recedes
+   until the field is being used. Four filled grey bands in one group was the toolbars
+   shouting over the words they belong to. */
+.rt-bar{display:flex;flex-wrap:wrap;gap:1px;padding:3px;background:transparent;
+  border-bottom:1px solid var(--line)}
+.rt:focus-within .rt-bar{background:var(--bg)}
 .rt-bar button{border:0;background:transparent;cursor:pointer;min-width:24px;height:22px;
-  border-radius:4px;color:var(--ink-2);font-size:12px;line-height:1;padding:0 5px}
-.rt-bar button:hover{background:var(--line)}
+  border-radius:4px;color:var(--ink-3);font-size:12px;line-height:1;padding:0 5px}
+.rt:focus-within .rt-bar button{color:var(--ink-2)}
+.rt-bar button:hover{background:var(--line);color:var(--ink-2)}
 .rt-bar button.on{background:var(--line-2);color:var(--ink)}
 .rt-bar .rt-color{display:inline-flex;align-items:center;justify-content:center;width:24px;
   height:22px;cursor:pointer}
@@ -265,19 +314,20 @@ textarea.inp{resize:vertical;min-height:60px}
 .pg-list .grow{flex:1;min-width:0}
 .pg-list small{color:var(--ink-3)}
 
-/* ---------- phase 3 additions ---------- */
-.ol-slot{margin:3px 0 8px;padding:6px 8px;border:1px dashed var(--line-2);border-radius:var(--r-sm);
-  color:var(--ink-3);font-size:11.5px;text-align:center;cursor:pointer;background:transparent}
-.ol-slot:hover{border-color:var(--accent);color:var(--accent);background:var(--sand)}
-.ol-item.hidden-sec .ol-name>span:first-child{opacity:.45;text-decoration:line-through}
+.btn-destructive{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn-destructive:hover{background:var(--danger);filter:brightness(1.1)}
+.confirm-detail{margin:0 0 8px;color:var(--ink-2)}
 
 .notice{display:flex;flex-direction:column;gap:8px;align-items:flex-start;background:var(--sand);
-  border:1px solid #e6d9cd;border-radius:var(--r);padding:10px;margin-bottom:10px;
+  border:1px solid #e6d9cd;border-radius:var(--r);padding:10px;margin:2px 0 10px;
   color:var(--ink-2);font-size:12px;line-height:1.45}
+.notice-sub{color:var(--ink-3);margin-top:-4px}
 
 .empty{color:var(--ink-3);text-align:center;padding:28px 16px;line-height:1.5}
-.f-note{color:var(--ink-2);background:var(--bg);border-radius:var(--r-sm);padding:8px 10px;
-  font-size:11.5px;line-height:1.45}
+/* A note explains; it is not something to fill in. A filled box the same size and colour as
+   an input said otherwise, so it is a rule and quiet text instead. */
+.f-note{color:var(--ink-3);border-left:2px solid var(--line-2);padding:1px 0 1px 9px;
+  margin:2px 0 12px;font-size:11.5px;line-height:1.5}
 .f-out{min-width:40px;text-align:right;color:var(--ink-3);font-size:11.5px}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 .rep-empty{padding:10px;color:var(--ink-3);text-align:center}

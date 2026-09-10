@@ -37,5 +37,7 @@ export function openLibrary(slot) {
     body.append(grid);
   }
 
-  openModal({ title: `Add a section to slot ${String(slot).padStart(2, '0')}`, body });
+  // The slot is where the click already happened — naming its index adds a number the
+  // author never chose and cannot act on.
+  openModal({ title: 'Add a section', body });
 }

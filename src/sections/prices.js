@@ -1,8 +1,8 @@
 // Prices — spec doc 31, with its child rows from doc 50. Fixed anchor, slot 02.
-import { ARCHETYPE, CABIN_CLASSES, INK, LEVEL, REGIONS } from '../model/enums.js';
+import { ARCHETYPE, CABIN_CLASSES, LEVEL, REGIONS } from '../model/enums.js';
 import { uid } from '../util.js';
-import { attr, blankRich, cls, esc, img, rich, style } from '../render/html.js';
-import { RT_FULL, all, imgField, isBlank, needText } from './_common.js';
+import { attr, blankRich, cls, esc, img, rich } from '../render/html.js';
+import { RT_FULL, all, contentGroup, imgField, isBlank, mediaGroup, needText } from './_common.js';
 
 const MAX_ROWS = 30;
 
@@ -19,25 +19,16 @@ export default {
   fixedBg: '#FFFFFF',
 
   fields: [
-    { title: 'Header', open: true, fields: [
-      { key: 'section_title', kind: 'text', label: 'Section title', help: 'Hidden when empty.' },
-      { key: 'title_color', kind: 'color', label: 'Title colour', default: INK },
-      { key: 'title_weight', kind: 'segmented', label: 'Title weight', default: 'Bold',
-        options: [{ value: 'Regular', label: 'Regular' }, { value: 'Bold', label: 'Bold' }] },
-      { key: 'title_italic', kind: 'toggle', label: 'Italic', default: false },
-      { key: 'subheading', kind: 'richtext', label: 'Subheading', tools: RT_FULL, help: 'Hidden when empty.' },
-    ] },
-
-    { title: 'Media', open: false, fields: [
-      { key: 'media_layout_type', kind: 'segmented', label: 'Images', default: '1 Image',
-        options: [{ value: '1 Image', label: '1' }, { value: '2 Images', label: '2' }] },
-      imgField('media_image_single', 'Image', { ratio: '1:1',
-        when: (/** @type {any} */ p) => p.media_layout_type !== '2 Images' }),
-      imgField('media_image_large', 'Large image', { ratio: '1:1',
-        when: (/** @type {any} */ p) => p.media_layout_type === '2 Images' }),
-      imgField('media_image_small', 'Small image', { ratio: '1:1',
-        when: (/** @type {any} */ p) => p.media_layout_type === '2 Images' }),
-    ] },
+    // Title colour, weight and italic used to sit here, between the title and the line
+    // under it. They duplicated the shared heading component, put three styling controls in
+    // the middle of two content fields, and were the one place an author could quietly make
+    // an off-brand page. The footnote joins them here instead: it is copy, not table setup.
+    contentGroup([
+      { key: 'section_title', kind: 'text', label: 'Title', help: 'Hidden when empty.' },
+      { key: 'subheading', kind: 'richtext', label: 'Subtitle', tools: RT_FULL, help: 'Hidden when empty.' },
+      { key: 'footer_paragraph', kind: 'richtext', label: 'Footnote', tools: RT_FULL,
+        help: 'Shown under the table. Hidden when empty.' },
+    ]),
 
     { title: 'Table', open: true, fields: [
       { key: 'table_headline_left', kind: 'text', label: 'Left column heading', default: 'Route & Cabin' },
@@ -51,7 +42,7 @@ export default {
     ] },
 
     { title: 'Rows', open: true, fields: [
-      { key: 'rows', kind: 'repeater', label: 'Price rows', addLabel: '+ Add row', min: 1, max: MAX_ROWS,
+      { key: 'rows', kind: 'repeater', label: '', addLabel: '+ Add row', min: 1, max: MAX_ROWS,
         itemTitle: (/** @type {any} */ r, /** @type {number} */ i) => r.row_title || `Row ${i + 1}`,
         bulkImport: 'prices',
         item: { fields: [
@@ -68,19 +59,23 @@ export default {
           imgField('airline_logo', 'Airline logo', { ratio: '1:1', decorative: true }),
           { key: 'region', kind: 'select', label: 'Region', default: 'Global',
             options: REGIONS.map((r) => ({ value: r, label: r })) },
-          { key: 'text_color', kind: 'color', label: 'Row text colour', default: INK },
         ] } },
     ] },
 
-    { title: 'Footnote', open: false, fields: [
-      { key: 'footer_paragraph', kind: 'richtext', label: 'Disclaimer', tools: RT_FULL,
-        help: 'Placed under the table. Hidden when empty.' },
-    ] },
+    mediaGroup([
+      { key: 'media_layout_type', kind: 'segmented', label: 'Images', default: '1 Image',
+        options: [{ value: '1 Image', label: '1' }, { value: '2 Images', label: '2' }] },
+      imgField('media_image_single', 'Image', { ratio: '1:1',
+        when: (/** @type {any} */ p) => p.media_layout_type !== '2 Images' }),
+      imgField('media_image_large', 'Large image', { ratio: '1:1',
+        when: (/** @type {any} */ p) => p.media_layout_type === '2 Images' }),
+      imgField('media_image_small', 'Small image', { ratio: '1:1',
+        when: (/** @type {any} */ p) => p.media_layout_type === '2 Images' }),
+    ]),
   ],
 
   defaults: {
     section_title: 'Our fares to London',
-    title_color: INK, title_weight: 'Bold', title_italic: false,
     media_layout_type: '1 Image',
     table_headline_left: 'Route & Cabin', table_headline_right: 'Published / Our Fare',
     region_tabs_enabled: false,
@@ -133,8 +128,6 @@ export default {
 .prices-content{padding:0 40px}
 .prices-body{display:flex;flex-direction:column;gap:24px}
 .prices-title{margin:0 0 12px;font-size:32px;letter-spacing:-.02em;line-height:1.2}
-.prices-title.regular{font-weight:500}
-.prices-title.italic{font-style:italic}
 .prices-sub{color:var(--ink-soft)}
 .tabs{display:flex;gap:6px;flex-wrap:wrap}
 .tabs button{border:1px solid var(--line);background:#fff;padding:6px 14px;
@@ -199,8 +192,7 @@ export default {
     const hasTitle = !isBlank(p.section_title);
     const hasSub = !blankRich(p.subheading);
     const head = !hasTitle && !hasSub ? '' : `<div class="prices-head">
-      ${hasTitle ? `<h2 class="${esc(cls('prices-title',
-          p.title_weight === 'Regular' && 'regular', p.title_italic && 'italic'))}"${style({ color: p.title_color })}>${esc(p.section_title)}</h2>` : ''}
+      ${hasTitle ? `<h2 class="prices-title">${esc(p.section_title)}</h2>` : ''}
       ${hasSub ? `<div class="prices-sub">${rich(p.subheading)}</div>` : ''}
     </div>`;
 
@@ -269,7 +261,7 @@ function renderRow(r, p, currency, ctx) {
     data-destination="${esc(r.row_title || '')}"
     data-cabin="${esc(r.cabin_class || 'Business')}"
     data-row-region="${esc(r.region || 'Global')}"
-    aria-label="${esc(name)}"${style({ color: r.text_color })}>
+    aria-label="${esc(name)}">
     ${showLogo ? `<span class="prow-logo">${img(r.airline_logo, { decorative: true, placeholder: 'Logo' })}</span>` : ''}
     <span class="prow-main">
       <span class="prow-title">${esc(r.row_title || '')}</span>
@@ -294,7 +286,7 @@ export function newRow(over = {}) {
     row_id: uid('row'), row_title: '', price_value: '', anchor_price_value: '',
     cabin_class: 'Business', label_1: '', label_2: '', label_3: '',
     label_3_is_strikethrough: false, airline_logo: null, region: 'Global',
-    text_color: INK, ...over,
+    ...over,
   };
 }
 

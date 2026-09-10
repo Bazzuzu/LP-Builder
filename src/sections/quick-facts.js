@@ -5,7 +5,7 @@
 // not literally a "quick facts" widget.
 import { ARCHETYPE, LEVEL } from '../model/enums.js';
 import { blankRich, dynamicShell, esc, img, rich } from '../render/html.js';
-import { ALIGN_OPTS, RT_FULL, SIZE_OPTS, all, imgField, isBlank, needMedia, needRich, needText, styleGroup } from './_common.js';
+import { RT_FULL, advancedGroup, all, appearanceGroup, contentGroup, headingFields, imgField, isBlank, mediaGroup, needMedia, needRich, needText } from './_common.js';
 
 /** @type {import('../model/types.js').SectionType} */
 export default {
@@ -18,31 +18,32 @@ export default {
   description: 'Narrative text, a photo pairing and a list of specs. Fixed layout, no media-side flip.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF' }),
-    { title: 'Content', open: true, fields: [
-      { key: 'section_title', kind: 'text', label: 'Section title', required: true },
-      { key: 'primary_paragraph', kind: 'richtext', label: 'Lead paragraph', required: true, tools: RT_FULL },
+    contentGroup([
+      // This section's supporting copy is a real paragraph rather than a subheading, so it
+      // replaces `subheading` in the standard heading block instead of sitting beside it.
+      ...headingFields({ required: true, sub: false }),
+      { key: 'primary_paragraph', kind: 'richtext', label: 'Text', required: true, tools: RT_FULL },
       { key: 'secondary_paragraph', kind: 'richtext', label: 'Footnote', tools: RT_FULL,
         help: 'Optional small print under the fact list, e.g. a disclaimer.' },
-      { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: 'SIZE_M', options: SIZE_OPTS },
-      { key: 'heading_align', kind: 'segmented', label: 'Heading alignment', default: 'ALIGN_LEFT', options: ALIGN_OPTS },
-    ] },
+    ]),
     { title: 'Facts', open: true, fields: [
-      { key: 'cards', kind: 'repeater', label: 'Facts', min: 2, max: 4, addLabel: '+ Add fact',
+      { key: 'cards', kind: 'repeater', label: '', min: 2, max: 4, addLabel: '+ Add fact',
         itemTitle: (/** @type {any} */ c, /** @type {number} */ i) => c.title || `Fact ${i + 1}`,
         help: 'Facts 1 and 2 are mandatory. A fact with only one of its two fields filled is an error, never a silent drop.',
         item: { fields: [
           { key: 'title', kind: 'text', label: 'Label', placeholder: 'Emirates Airlines' },
           // Formatting parity with other rich fields for now — this becomes the shared
           // caption/paragraph editor once that component is standardised across sections.
-          { key: 'paragraph', kind: 'richtext', label: 'Caption', tools: RT_FULL },
+          { key: 'paragraph', kind: 'richtext', label: 'Text', tools: RT_FULL },
         ] } },
     ] },
-    { title: 'Media', open: false, fields: [
+    mediaGroup([
       imgField('upload_small_1', 'Thumbnail 1'),
       imgField('upload_small_2', 'Thumbnail 2'),
       imgField('upload_big', 'Featured image', { hint: 'Container clamps to 400–640px, object-fit: cover.' }),
-    ] },
+    ]),
+    appearanceGroup({ bg: '#FFFFFF' }),
+    advancedGroup(),
   ],
 
   defaults: {

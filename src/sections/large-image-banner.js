@@ -1,7 +1,7 @@
 // Large Image Banner — spec doc 38. Visual-first interim CTA block.
 import { ARCHETYPE } from '../model/enums.js';
 import { ctaLink, dynamicShell, img, sectionHeader } from '../render/html.js';
-import { ALIGN_OPTS, RT_FULL, SIZE_OPTS, all, ctaGroup, imgField, needMedia, needText, styleGroup } from './_common.js';
+import { advancedGroup, all, appearanceGroup, contentGroup, ctaGroup, headingFields, imgField, mediaGroup, needMedia, needText } from './_common.js';
 
 /** @type {import('../model/types.js').SectionType} */
 export default {
@@ -14,15 +14,13 @@ export default {
   description: 'Full-width featured image with a large headline and a call to action.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF' }),
-    { title: 'Content', open: true, fields: [
-      { key: 'section_title', kind: 'text', label: 'Headline', required: true },
-      { key: 'subheading', kind: 'richtext', label: 'Supporting copy', tools: RT_FULL },
-      { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: 'SIZE_L', options: SIZE_OPTS },
-      { key: 'heading_align', kind: 'segmented', label: 'Heading alignment', default: 'ALIGN_CENTER', options: ALIGN_OPTS },
-      imgField('featured_image', 'Featured image', { hint: 'JPG, PNG or WebP. High resolution.' }),
-    ] },
+    contentGroup(headingFields({ required: true, size: 'SIZE_L', align: 'ALIGN_CENTER' })),
     ctaGroup('cta', { toggle: false, label: 'Request a custom itinerary' }),
+    mediaGroup([
+      imgField('featured_image', 'Featured image', { hint: 'JPG, PNG or WebP. High resolution.' }),
+    ], { open: true }),
+    appearanceGroup({ bg: '#FFFFFF' }),
+    advancedGroup(),
   ],
 
   defaults: {

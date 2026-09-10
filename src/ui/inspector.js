@@ -24,14 +24,6 @@ export function mountInspector() {
     const type = REGISTRY[section.key];
     if (!type) { host.append(el('.empty', { text: `Unknown section type: ${section.key}` })); return; }
 
-    if (GLOBAL_CONTENT_ARCHETYPES.includes(type.archetype)) {
-      host.append(el('.notice', {}, [
-        el('span', { text: 'Content comes from the site-wide settings. Only the switches below are per page.' }),
-        el('button.btn.btn-sm', { type: 'button',
-          onclick: async () => (await import('./globals-panel.js')).openGlobals(type.key) }, 'Open global settings'),
-      ]));
-    }
-
     // Errors are keyed by field path so a widget can show its own message inline.
     /** @type {Map<string, {message:string}[]>} */
     const errors = new Map();
@@ -49,6 +41,8 @@ export function mountInspector() {
       set openItem(v) { openItem = v; },
     };
 
+    const groups = el('div');
+    let shown = 0;
     for (const group of type.fields || []) {
       const key = `${section.key}:${group.title}`;
       const isOpen = openGroups[key] ?? group.open ?? false;
@@ -59,6 +53,7 @@ export function mountInspector() {
         if (node) { body.append(node); rendered++; }
       }
       if (!rendered) continue;
+      shown++;
 
       const box = el('.fs', { 'data-open': String(isOpen) });
       box.append(el('.fs-head', {
@@ -67,8 +62,26 @@ export function mountInspector() {
           box.setAttribute('data-open', String(openGroups[key]));
         },
       }, [el('span.chev', { text: '▾' }), el('span', { text: group.title })]), body);
-      host.append(box);
+      groups.append(box);
     }
+
+    // Sections whose content lives in the global store say so up front, and say the right
+    // thing: "only the switches below are per page" was a lie on Footer, Contact and
+    // Subscription, which have no switches at all — there, the card IS the whole panel.
+    if (GLOBAL_CONTENT_ARCHETYPES.includes(type.archetype)) {
+      host.append(el('.notice', {}, [
+        el('span', { text: type.globalHint || 'This section’s content is shared by every page.' }),
+        el('span.notice-sub', {
+          text: shown
+            ? 'The settings below apply to this page only.'
+            : 'There is nothing to set for this page on its own.',
+        }),
+        el('button.btn.btn-sm', { type: 'button',
+          onclick: async () => (await import('./globals-panel.js')).openGlobals(type.key) },
+        `Edit in Global Settings`),
+      ]));
+    }
+    host.append(groups);
   };
 
   // Rebuilding the panel while someone is mid-keystroke destroys their caret — fatal in a

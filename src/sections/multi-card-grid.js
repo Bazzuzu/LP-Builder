@@ -1,7 +1,7 @@
 // Multi-Card Grid — spec doc 37, children per doc 51.
 import { ARCHETYPE, LEVEL } from '../model/enums.js';
 import { blankRich, dynamicShell, esc, img, rich } from '../render/html.js';
-import { RT_BASIC, all, headerGroup, isBlank, needMedia, styleGroup } from './_common.js';
+import { RT_BASIC, advancedGroup, all, appearanceGroup, contentGroup, headingFields, isBlank, needMedia } from './_common.js';
 
 /** @type {import('../model/types.js').SectionType} */
 export default {
@@ -14,22 +14,25 @@ export default {
   description: 'Two to four media cards: either all pictures, or all pictures with copy.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF' }),
-    headerGroup({ size: 'SIZE_M', align: 'ALIGN_CENTER' }),
-    { title: 'Grid', open: true, fields: [
-      { key: 'card_count', kind: 'segmented', label: 'Cards', default: 3,
+    contentGroup([
+      ...headingFields({ align: 'ALIGN_CENTER' }),
+      { key: 'footnote', kind: 'richtext', label: 'Footnote', tools: RT_BASIC,
+        help: 'Optional small print under the grid, e.g. an availability disclaimer.' },
+    ]),
+    { title: 'Cards', open: true, fields: [
+      { key: 'card_count', kind: 'segmented', label: 'How many', default: 3,
         options: [{ value: 2, label: '2' }, { value: 3, label: '3' }, { value: 4, label: '4' }],
         help: 'Cards beyond the count are kept, not deleted — switching back restores them.' },
-      { key: 'cards', kind: 'repeater', label: 'Cards', min: 2, max: 4, fixed: 'card_count',
+      { key: 'cards', kind: 'repeater', label: '', min: 2, max: 4, fixed: 'card_count',
         itemTitle: (/** @type {any} */ c, /** @type {number} */ i) => c.title || `Card ${i + 1}`,
         item: { fields: [
           { key: 'image', kind: 'image', label: 'Image' },
           { key: 'title', kind: 'text', label: 'Title' },
-          { key: 'paragraph', kind: 'richtext', label: 'Paragraph', tools: RT_BASIC },
+          { key: 'paragraph', kind: 'richtext', label: 'Text', tools: RT_BASIC },
         ] } },
-      { key: 'footnote', kind: 'richtext', label: 'Footnote', tools: RT_BASIC,
-        help: 'Optional legal small print under the grid, e.g. an availability disclaimer.' },
     ] },
+    appearanceGroup({ bg: '#FFFFFF' }),
+    advancedGroup(),
   ],
 
   defaults: {

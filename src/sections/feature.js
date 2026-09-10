@@ -4,7 +4,7 @@
 // the one dimension that genuinely varies independently of the preset.
 import { ARCHETYPE } from '../model/enums.js';
 import { blankRich, cls, dynamicShell, esc, img, rich } from '../render/html.js';
-import { RT_BASIC, all, headerGroup, needMedia, needRich, needText, styleGroup } from './_common.js';
+import { RT_BASIC, advancedGroup, all, appearanceGroup, contentGroup, headingFields, needMedia, needRich, needText } from './_common.js';
 
 /** The three presets (doc 41 §4.3). Selecting one is the only way `icon_size` and
  * `has_paragraph` change — there is no independent control for either. Each preset also
@@ -27,29 +27,32 @@ export default {
   description: 'Icon + title (+ paragraph) items, in three presets: L, M, S.',
 
   fields: [
-    styleGroup({ bg: '#FFFFFF' }),
-    headerGroup({ open: false, size: 'SIZE_L', align: 'ALIGN_CENTER' }),
-    { title: 'Presentation', open: true, fields: [
-      { key: '_preset', kind: 'preset', label: 'Preset', options: Object.keys(PRESETS).map((k) => ({ value: k, label: k })),
+    contentGroup(headingFields({ size: 'SIZE_L', align: 'ALIGN_CENTER' })),
+    // Preset and count sit at the head of the group whose contents they govern, rather than
+    // in a "Presentation" group of their own — a preset the author cannot see the effect of
+    // is a switch in another room.
+    { title: 'Items', open: true, fields: [
+      { key: '_preset', kind: 'preset', label: 'Size', options: Object.keys(PRESETS).map((k) => ({ value: k, label: k })),
         applies: PRESETS,
-        help: 'Sets the icon size, heading size and layout. L and M show a paragraph; S is icon + label only — that is what makes it S, not a separate toggle.' },
-      { key: 'item_count', kind: 'segmented', label: 'Items', default: 3,
+        help: 'Sets the icon size, the layout, and the section heading size in Content above. '
+          + 'L and M show a paragraph; S is icon + label only — that is what makes it S, not a separate toggle.' },
+      { key: 'item_count', kind: 'segmented', label: 'How many', default: 3,
         options: [{ value: 3, label: '3' }, { value: 4, label: '4' }],
         // L is fixed at exactly 3 (doc 41 §4.3); only M and S — the two 48px presets — let
         // the count vary. `icon_size` is what actually distinguishes them, since neither is
         // stored as its own "which preset" flag.
         when: (/** @type {any} */ p) => Number(p.icon_size) !== 64 },
-    ] },
-    { title: 'Items', open: true, fields: [
-      { key: 'items', kind: 'repeater', label: 'Items', min: 3, max: 4, fixed: 'item_count',
+      { key: 'items', kind: 'repeater', label: '', min: 3, max: 4, fixed: 'item_count',
         itemTitle: (/** @type {any} */ it, /** @type {number} */ i) => it.title || `Item ${i + 1}`,
         item: { fields: [
           { key: 'icon', kind: 'image', label: 'Icon', decorative: true },
           { key: 'title', kind: 'text', label: 'Title' },
-          { key: 'paragraph', kind: 'richtext', label: 'Paragraph', tools: RT_BASIC,
+          { key: 'paragraph', kind: 'richtext', label: 'Text', tools: RT_BASIC,
             when: (/** @type {any} */ p) => p.has_paragraph !== false },
         ] } },
     ] },
+    appearanceGroup({ bg: '#FFFFFF' }),
+    advancedGroup(),
   ],
 
   defaults: {

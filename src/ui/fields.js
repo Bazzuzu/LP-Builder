@@ -4,6 +4,7 @@ import { el, fmtBytes, humanizeFilename, readColor, writeColor } from '../util.j
 import { assetUrl, getAsset, pickFile, putAsset } from '../store/assets.js';
 import { isoToZonedLocal, zonedTimeToIso } from '../util.js';
 import { parseBulkRows } from '../sections/prices.js';
+import { confirmDelete } from './confirm.js';
 import { openModal } from './modal.js';
 import { richText } from './richtext.js';
 
@@ -127,43 +128,58 @@ const WIDGETS = {
     onchange: (e) => ctx.set(path, zonedTimeToIso(e.target.value, ctx.get(f.tzKey) || 'UTC')),
   }),
 
+  /**
+   * The site's own colours come first as named swatches; the free picker, the hex box and
+   * the alpha slider sit behind a "Custom" disclosure. A manager picking a brand colour is
+   * one click away from done, and going off-palette stays possible but is a decision they
+   * have to make on purpose. Custom opens by default when the stored value is not one of
+   * the presets, so an existing custom colour is never hidden from the person editing it.
+   */
   color(f, ctx, path) {
     const raw = ctx.get(path) ?? f.default ?? '#FFFFFF';
+    const presets = f.presets || [];
+    const named = (/** @type {string} */ v) =>
+      presets.find((p) => String(p.value).toLowerCase() === String(v ?? '').toLowerCase());
+
     const { hex, a } = readColor(raw);
+    let alpha = a;
+
     const box = el('div');
     const fill = el('span', { style: { background: raw } });
     const native = /** @type {HTMLInputElement} */ (el('input', { type: 'color', value: hex }));
-    const chip = el('.color-sw', {}, [fill, native]);
     const hexIn = /** @type {HTMLInputElement} */ (el('input.inp.mono', { type: 'text', value: raw }));
+    const swatches = el('.color-presets');
 
-    let alpha = a;
     const apply = (value, coalesce) => {
-      fill.style.background = value; hexIn.value = value;
+      fill.style.background = value;
+      hexIn.value = value;
+      for (const b of swatches.children) {
+        b.classList.toggle('on', String(b.getAttribute('data-value')).toLowerCase() === String(value).toLowerCase());
+      }
       ctx.set(path, value, { coalesce: coalesce ? path : null });
     };
+
+    for (const p of presets) {
+      swatches.append(el('button', {
+        type: 'button', title: p.label, 'data-value': p.value, style: { background: p.value },
+        class: named(raw)?.value === p.value ? 'on' : '',
+        onclick: () => {
+          const r = readColor(p.value); alpha = r.a; native.value = r.hex; apply(p.value);
+        },
+      }));
+    }
+    if (presets.length) box.append(swatches);
+
     native.addEventListener('input', () => apply(writeColor(native.value, alpha), true));
     hexIn.addEventListener('change', () => {
       const r = readColor(hexIn.value); alpha = r.a; native.value = r.hex; apply(hexIn.value.trim());
     });
-    box.append(el('.color-f', {}, [chip, hexIn]));
 
-    if (f.presets?.length) {
-      const row = el('.color-presets');
-      for (const p of f.presets) {
-        row.append(el('button', {
-          type: 'button', title: p.label, style: { background: p.value },
-          class: String(p.value).toLowerCase() === String(raw).toLowerCase() ? 'on' : '',
-          onclick: () => {
-            const r = readColor(p.value); alpha = r.a; native.value = r.hex; apply(p.value);
-            [...row.children].forEach((c) => c.classList.remove('on'));
-          },
-        }));
-      }
-      box.append(row);
-    }
+    const custom = el('.color-custom');
+    custom.append(el('.color-f', {}, [el('.color-sw', {}, [fill, native]), hexIn]));
     if (f.alpha) {
       const val = el('span.f-out', { text: Math.round(alpha * 100) + '%' });
-      box.append(el('.f-row', {}, [
+      custom.append(el('.f-row', {}, [
         el('span.f-help', { text: 'Alpha' }),
         el('input', { type: 'range', min: 0, max: 100, value: Math.round(alpha * 100),
           oninput: (/** @type {any} */ e) => {
@@ -173,6 +189,14 @@ const WIDGETS = {
         val,
       ]));
     }
+
+    // With no presets to choose from there is nothing to disclose — show the picker plainly
+    // rather than hiding the field's only control behind a toggle.
+    if (!presets.length) { box.append(custom); return box; }
+
+    const disc = el('details.color-disc', { open: !named(raw) });
+    disc.append(el('summary', { text: 'Custom' }), custom);
+    box.append(disc);
     return box;
   },
 
@@ -277,7 +301,7 @@ function repeater(f, ctx, path) {
         el('button', { type: 'button', title: 'Move down', disabled: i === items.length - 1, onclick: () => move(i, 1) }, '▼'),
         !f.fixed && el('button', { type: 'button', title: 'Duplicate', onclick: () => dup(i) }, '⧉'),
         !f.fixed && el('button', { type: 'button', title: 'Delete',
-          disabled: !!f.min && items.length <= f.min, onclick: () => del(i) }, '✕'),
+          disabled: !!f.min && items.length <= f.min, onclick: () => askDelete(i, item) }, '✕'),
       ].filter(Boolean)),
     ]);
     const body = el('.rep-body');
@@ -311,6 +335,20 @@ function repeater(f, ctx, path) {
   function add() { write([...(ctx.get(path) || []), blank()]); }
   function dup(i) { const a = [...ctx.get(path)]; a.splice(i + 1, 0, structuredClone(a[i])); write(a); }
   function del(i) { const a = [...ctx.get(path)]; a.splice(i, 1); write(a); }
+
+  /**
+   * An empty row is a mistake to undo, not a decision to confirm — asking about one is the
+   * dialogue that teaches people to dismiss dialogues. A row someone has filled in gets the
+   * question.
+   */
+  function askDelete(i, item) {
+    const label = f.itemTitle ? f.itemTitle(item, i) : `Item ${i + 1}`;
+    const filled = Object.entries(item || {}).some(([k, v]) =>
+      !k.startsWith('row_id') && v != null && v !== '' && v !== false);
+    if (!filled) { del(i); return; }
+    confirmDelete({ what: (f.label || 'this item').replace(/s$/, '').toLowerCase() || 'item',
+      detail: label, onConfirm: () => del(i) });
+  }
   function move(i, d) { const a = [...ctx.get(path)]; const [x] = a.splice(i, 1); a.splice(i + d, 0, x); write(a); }
 
   function multiUpload() {

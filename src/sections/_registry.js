@@ -55,6 +55,21 @@ export const insertableTypes = () =>
 /** Every field descriptor of a type, flattened across its groups. */
 export const allFields = (key) => (REGISTRY[key]?.fields || []).flatMap((g) => g.fields || []);
 
+/**
+ * What this particular instance actually says, for the page-structure list — so two
+ * sections of the same type are told apart without opening either. Generic on purpose:
+ * the outline stays ignorant of section types, and a type that needs something else
+ * declares its own `label(props)` instead of the outline growing a special case.
+ * Returns '' when the section has no page-level copy of its own (the global blocks).
+ * @param {import('../model/types.js').Section} section
+ */
+export function sectionLabel(section) {
+  const type = REGISTRY[section.key];
+  const props = section.props || {};
+  const raw = type?.label ? type.label(props) : (props.section_title || props.title_text || '');
+  return String(raw ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 /** Defaults for a fresh instance, merged from the type's declared field defaults. */
 export function defaultsFor(key) {
   const type = REGISTRY[key];
