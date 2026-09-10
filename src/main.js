@@ -4,7 +4,7 @@ import { initAssets } from './store/assets.js';
 import { loadGlobals, globals, onGlobals } from './store/globals.js';
 import { validatePage } from './model/validate.js';
 import { REGISTRY } from './sections/_registry.js';
-import { templateById, pageFromTemplate } from './presets/page-templates.js';
+import { hydrateTemplateAssets, templateById, pageFromTemplate } from './presets/page-templates.js';
 import * as store from './store/pages.js';
 import { mountOutline } from './ui/outline.js';
 import { mountInspector } from './ui/inspector.js';
@@ -18,6 +18,9 @@ import { exportHtml, exportJson } from './export.js';
 
 async function boot() {
   await initAssets();
+  // Before the first page is seeded: a saved template's images must already be resolvable
+  // when its sections render, or the canvas opens on placeholders.
+  await hydrateTemplateAssets();
   loadGlobals();
 
   if (!store.load()) {

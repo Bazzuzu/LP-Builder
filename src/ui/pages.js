@@ -1,7 +1,9 @@
 // Page list and page settings.
-import { el, slugify } from '../util.js';
+import { el, slugify, toast } from '../util.js';
 import { PAGE_TYPES, REGIONS } from '../model/enums.js';
 import { TEMPLATES, pageFromTemplate } from '../presets/page-templates.js';
+import { exportTemplate } from '../export.js';
+import { pageFromBundle, parseBundle, restoreAssets } from '../import.js';
 import * as store from '../store/pages.js';
 import { closeModal, openModal } from './modal.js';
 
@@ -20,6 +22,15 @@ export function openPagesModal() {
     ]));
   }
   body.append(grid);
+
+  body.append(el('.f-row', {}, [
+    el('button.btn.btn-sm', { type: 'button', onclick: importPage }, '↓ Import a page'),
+    el('button.btn.btn-sm', { type: 'button', onclick: saveAsTemplate }, '↑ Save this page as a template'),
+  ]));
+  body.append(el('.f-help.f-tip', {
+    text: 'Import reads a file from the JSON button. A saved template keeps this page’s '
+      + 'content and images; commit the file it downloads to ship it to everyone.',
+  }));
 
   body.append(el('.lib-group-title', { text: `Pages · ${store.state.pages.length}` }));
   const ul = el('ul.issues');
@@ -40,6 +51,70 @@ export function openPagesModal() {
   body.append(ul);
 
   openModal({ title: 'Pages', body });
+}
+
+/* ------------------------------------------------------- import & templates */
+
+/** Read a page bundle from disk: its images go back into the asset store, then the page. */
+function importPage() {
+  const input = el('input', { type: 'file', accept: 'application/json,.json' });
+  input.addEventListener('change', async () => {
+    const file = /** @type {HTMLInputElement} */ (input).files?.[0];
+    if (!file) return;
+    try {
+      const parsed = parseBundle(await file.text());
+      // Assets first: a page whose images land after it renders shows placeholders until
+      // something else happens to repaint.
+      await restoreAssets(parsed.assets);
+      const page = pageFromBundle(parsed);
+      store.addPage(page);
+      closeModal();
+      toast(`Imported “${page.internal_name}”`);
+    } catch (err) {
+      // The message is written to be read by whoever picked the file, so it is shown rather
+      // than logged — a silent no-op looks like the button is broken.
+      openModal({
+        narrow: true,
+        title: 'Could not import that file',
+        body: el('div', {}, [
+          el('p', { text: /** @type {Error} */ (err).message }),
+          el('.f-help', { text: file.name }),
+        ]),
+        actions: [{ label: 'Close', primary: true }],
+      });
+    }
+  });
+  input.click();
+}
+
+/** Freeze the current page as a template file, ready to be committed. */
+function saveAsTemplate() {
+  const page = store.doc();
+  if (!page) return;
+  const name = el('input.inp', { type: 'text', value: page.internal_name || '' });
+  const desc = el('input.inp', { type: 'text', placeholder: 'What this template is for' });
+
+  openModal({
+    narrow: true,
+    title: 'Save as template',
+    body: el('.gpane', {}, [
+      el('.f', {}, [el('.f-label', { text: 'Template name' }), name]),
+      el('.f', {}, [el('.f-label', { text: 'Description' }), desc]),
+      el('.f-help', {
+        text: 'Downloads a .js file. Put it in src/presets/templates/ and add it to that '
+          + 'folder’s index.js — the file says exactly how in its header.',
+      }),
+    ]),
+    actions: [
+      { label: 'Cancel' },
+      { label: 'Download', primary: true, onClick: () => {
+        const value = /** @type {HTMLInputElement} */ (name).value.trim();
+        if (!value) return false;
+        exportTemplate(page, { name: value, description: /** @type {HTMLInputElement} */ (desc).value.trim() });
+        toast('Template file downloaded');
+      } },
+    ],
+  });
 }
 
 /** Page-level settings: identity, SEO and the route defaults the lead form inherits. */
