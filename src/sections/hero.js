@@ -267,31 +267,23 @@ export default {
    is notched into its own top border. Everything below the pills is the same box, so a
    pair (From/To) is one box split by a rule rather than two boxes side by side — which is
    what makes the row read as one control instead of two. */
-.lead-form{display:grid;gap:14px;min-width:0;--lf-line:#dcdcda;--lf-lab:#78787a}
-/* Not two equal halves: the right pill carries two values and a slash, the left one word.
-   Splitting 400px evenly truncated "Business" to "B…" — the mockup's equal halves come from
-   a much wider card, and the ratio is what has to give, not the text. */
-.lf-pills{display:grid;grid-template-columns:.82fr 1.18fr;gap:10px;min-width:0}
-.lf-pill{display:flex;align-items:center;min-width:0;height:40px;padding:0 4px 0 14px;
-  border-radius:999px;background:#f1f1ef;color:var(--ink);font-size:13px;font-weight:600}
-.lf-pill select{flex:1 1 auto;min-width:0;border:0;background:transparent;font:inherit;
-  color:inherit;cursor:pointer;-webkit-appearance:none;appearance:none;outline:0;
-  padding:0 20px 0 0;text-overflow:ellipsis;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23222' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 4px center}
-/* One pill, two real fields — cabin and party size stay separate values rather than being
-   welded into a single combinatorial option list. */
-/* One chevron per pill, at its right edge — the split pill is two controls but reads as
-   one, and a second arrow in the middle of it says otherwise. */
-.lf-pill select:not(:last-of-type){background-image:none;padding-right:0}
-.lf-pill .sep{flex:0 0 auto;padding:0 3px;color:var(--lf-lab);font-weight:400}
-/* Sizes to its own widest option rather than a guessed width. */
-.lf-pill .lf-travellers{flex:0 1 auto}
+.lead-form{display:grid;gap:18px;min-width:0;--lf-line:#dcdcda;--lf-lab:#78787a}
+/* Static, and equal halves. As <select>s they could not be both: a select is as wide as its
+   widest option, so "Premium Economy" and "6 Travelers" reserved room that "Business /
+   1 Traveler" then had to fit around, and the two pills could never balance. As plain text
+   the width is the pill's, not the option list's. Display only — nothing was submitting
+   them anyway; the lead engine arrives with doc 21 phase 5. */
+.lf-pills{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0}
+.lf-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
+  height:40px;padding:0 14px;border-radius:999px;background:#f1f1ef;color:var(--ink);
+  font-size:13.5px;font-weight:600}
+.lf-pill span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lf-pill svg{flex:0 0 auto;width:10px;height:6px;color:#222}
 
 .lf-field{position:relative;display:grid;border:1px solid var(--lf-line);border-radius:10px;
   min-width:0;background:#fff}
 .lf-pair{grid-template-columns:1fr 1fr}
-.lf-cell{position:relative;min-width:0;display:flex;align-items:center;height:54px}
+.lf-cell{position:relative;min-width:0;display:flex;align-items:center;height:50px}
 .lf-cell + .lf-cell{border-left:1px solid var(--lf-line)}
 /* The notch: the label paints over the border it sits on, in the card's own white. */
 .lf-lab{position:absolute;top:-7px;left:11px;padding:0 5px;background:#fff;
@@ -311,7 +303,7 @@ export default {
 .lf-swap:hover{color:var(--bronze)}
 
 .lf-phone{grid-template-columns:auto 1fr}
-.lf-cc{display:flex;align-items:center;gap:6px;height:54px;padding:0 12px 0 14px;
+.lf-cc{display:flex;align-items:center;gap:6px;height:50px;padding:0 12px 0 14px;
   border-right:1px solid var(--lf-line);position:relative}
 .lf-cc .flag{font-size:17px;line-height:1}
 .lf-cc select{border:0;background:transparent;font:inherit;font-size:15px;color:var(--ink);
@@ -325,7 +317,9 @@ export default {
 .lead-form .btn:hover{box-shadow:0 12px 28px -8px rgba(0,0,0,.48)}
 @media (max-width:1023px){
   .hero-grid{grid-template-columns:1fr;gap:36px}
-  .hero-card{width:100%}
+  /* The card keeps its 400px when the grid stacks — "static 400" means static, and its own
+     max-width:100% is what saves it on a phone narrower than that. The old width:100% here
+     stretched it to whatever the column happened to be. */
 }
 @media (max-width:767px){
   .hero-in{padding:32px 0 56px}
@@ -472,17 +466,9 @@ function leadForm(p, ctx) {
   const origin = ctx.page?.route?.default_origin || '';
   const destination = ctx.page?.route?.default_destination || '';
   return `<form class="lead-form" data-hero-lead novalidate>
-    <div class="lf-pills">
-      <span class="lf-pill">
-        <select aria-label="Trip type"><option>Round-trip</option><option>One-way</option></select>
-      </span>
-      <span class="lf-pill">
-        <select aria-label="Cabin class">${CABIN_CLASSES.map((c) => `<option>${esc(c)}</option>`).join('')}</select>
-        <span class="sep" aria-hidden="true">/</span>
-        <select class="lf-travellers" aria-label="Travellers">${
-          [1, 2, 3, 4, 5, 6].map((n) => `<option>${n} Traveler${n > 1 ? 's' : ''}</option>`).join('')
-        }</select>
-      </span>
+    <div class="lf-pills" aria-hidden="true">
+      ${pill('Round-trip')}
+      ${pill(`${CABIN_CLASSES[0]} / 1 Traveler`)}
     </div>
 
     <div class="lf-field lf-pair">
@@ -541,6 +527,16 @@ function leadForm(p, ctx) {
     </button>
   </form>`;
 }
+
+/**
+ * A trip selector, drawn but not wired. `aria-hidden` on the row: these carry no value a
+ * screen-reader user could change or submit, and announcing a control that does nothing is
+ * worse than not announcing it. They become real when the lead engine does.
+ * @param {string} text
+ */
+const pill = (text) => `<span class="lf-pill"><span>${esc(text)}</span>`
+  + `<svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.6"`
+  + ` stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l4 4 4-4"/></svg></span>`;
 
 /** Enough to look like a real picker without shipping a country database. */
 const DIAL_CODES = ['+1', '+44', '+33', '+49', '+34', '+39', '+971', '+65', '+81', '+61'];
