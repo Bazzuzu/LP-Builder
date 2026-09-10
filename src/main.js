@@ -98,8 +98,10 @@ function wireTopbar() {
   $('btn-json')?.addEventListener('click', () => { exportJson(store.doc()); toast('Page JSON downloaded'); });
 
   document.getElementById('viewport-seg')?.addEventListener('click', (e) => {
-    const btn = /** @type {HTMLElement} */ (e.target).closest('button');
-    if (!btn) return;
+    const btn = /** @type {HTMLButtonElement|null} */ (/** @type {HTMLElement} */ (e.target).closest('button'));
+    // A disabled button fires no click of its own, but the segment is one click target and
+    // the event still arrives here from the wrapper — so the guard is real, not defensive.
+    if (!btn || btn.disabled) return;
     const vp = /** @type {any} */ (btn.dataset.vp);
     store.setViewport(vp);
     [...(btn.parentElement?.children || [])].forEach((c) => c.classList.toggle('on', c === btn));

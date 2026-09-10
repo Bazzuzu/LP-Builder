@@ -47,6 +47,10 @@ html[data-tips="off"] .f-tip{display:none}
 .seg{display:inline-flex;background:var(--bg);border-radius:var(--r-sm);padding:2px;gap:2px}
 .seg button{border:0;background:transparent;padding:4px 12px;border-radius:5px;cursor:pointer;color:var(--ink-2)}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+/* No `pointer-events:none` here, unlike .btn[disabled]: the element has to keep receiving
+   hover for the browser to show its `title` — which is the whole point of disabling it. */
+.seg button[disabled]{color:var(--ink-3);opacity:.5;cursor:default}
+.seg button[disabled]:hover{background:transparent}
 
 /* ---------- workspace ---------- */
 .workspace{flex:1;display:flex;min-height:0}
