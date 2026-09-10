@@ -22,7 +22,11 @@ import { richText } from './richtext.js';
  * @param {string} [keyPrefix]
  */
 export function renderField(f, ctx, keyPrefix = '') {
-  if (f.kind === 'note') return el('.f-note', { text: f.text || '' });
+  // `.f-tip` marks explanatory text the "Show tips" switch can take away: help written for
+  // someone's first week, which is permanent clutter for everyone past it. Deliberately NOT
+  // applied to the alpha label, the "N items kept" status or the bulk-import format spec —
+  // those are labels and instructions, and hiding them would break the control.
+  if (f.kind === 'note') return el('.f-note.f-tip', { text: f.text || '' });
   if (f.when && !f.when(ctx.get('') || {}, (p) => ctx.get(p))) return null;
 
   const path = keyPrefix + f.key;
@@ -34,7 +38,7 @@ export function renderField(f, ctx, keyPrefix = '') {
     wrap.append(el('.f-label', {}, [f.label, f.required ? el('span.req', { text: '*' }) : null]));
   }
   wrap.append(build(f, ctx, path));
-  if (f.help) wrap.append(el('.f-help', { text: f.help }));
+  if (f.help) wrap.append(el('.f-help.f-tip', { text: f.help }));
   for (const e of errs) wrap.append(el('.f-err', { text: e.message }));
   return wrap;
 }
@@ -237,8 +241,8 @@ const WIDGETS = {
         }
       } else {
         box.append(el('.img-drop', { text: '⬆ Click or drop an image' }));
-        if (f.ratio) box.append(el('.img-hint', { text: `Container ratio ${f.ratio}` }));
-        if (f.help) box.append(el('.img-hint', { text: f.help }));
+        if (f.ratio) box.append(el('.img-hint.f-tip', { text: `Container ratio ${f.ratio}` }));
+        if (f.help) box.append(el('.img-hint.f-tip', { text: f.help }));
         box.onclick = choose;
       }
     };

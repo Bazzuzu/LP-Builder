@@ -24,6 +24,11 @@ button,input,select,textarea{font:inherit;color:inherit}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .page-name:hover{background:var(--bg)}
 .sep{width:1px;height:20px;background:var(--line);margin:0 4px}
+.tb-switch{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:var(--r-sm);
+  color:var(--ink-2);cursor:pointer;user-select:none;white-space:nowrap}
+.tb-switch:hover{background:var(--bg)}
+/* Set on <html> rather than #app: modals carrying help text render outside the app element. */
+html[data-tips="off"] .f-tip{display:none}
 
 .btn{border:1px solid var(--line-2);background:var(--panel);border-radius:var(--r-sm);
   padding:5px 10px;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s}

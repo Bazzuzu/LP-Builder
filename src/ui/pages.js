@@ -52,7 +52,7 @@ export function openPageSettings() {
 
   const field = (label, value, onInput, help) => {
     const input = el('input.inp', { type: 'text', value: value ?? '', oninput: (e) => onInput(e.target.value) });
-    return el('.f', {}, [el('.f-label', { text: label }), input, help ? el('.f-help', { text: help }) : null].filter(Boolean));
+    return el('.f', {}, [el('.f-label', { text: label }), input, help ? el('.f-help.f-tip', { text: help }) : null].filter(Boolean));
   };
   const select = (label, value, options, onChange) => {
     const sel = el('select.inp', { onchange: (e) => onChange(e.target.value) });

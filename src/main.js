@@ -31,6 +31,7 @@ async function boot() {
   mountSidePanel();
   mountPreview();
   wireTopbar();
+  wireTips();
   wireShortcuts();
 
   runValidation();
@@ -110,6 +111,33 @@ function wireTopbar() {
     store.setZoom(/** @type {any} */ (Number(btn.dataset.zoom)));
     [...(btn.parentElement?.children || [])].forEach((c) => c.classList.toggle('on', c === btn));
   });
+}
+
+/**
+ * Field help is written for someone's first week; past that it is permanent clutter above
+ * and below every control. So it is a preference rather than a fixture — remembered across
+ * sessions, defaulting to on because a manager who has just arrived has not been asked yet.
+ *
+ * The flag lands on <html>, not on #app, because the modals that also carry help text
+ * (page settings, global settings) render into #modal-root, outside the app element.
+ */
+const TIPS_KEY = 'lpb.ui.tips';
+
+function wireTips() {
+  const box = /** @type {HTMLInputElement|null} */ (document.getElementById('tips-toggle'));
+  let on = true;
+  try { on = localStorage.getItem(TIPS_KEY) !== 'off'; } catch { /* storage may be blocked */ }
+
+  const apply = () => {
+    document.documentElement.dataset.tips = on ? 'on' : 'off';
+    if (box) box.checked = on;
+  };
+  box?.addEventListener('change', () => {
+    on = box.checked;
+    try { localStorage.setItem(TIPS_KEY, on ? 'on' : 'off'); } catch { /* ignore */ }
+    apply();
+  });
+  apply();
 }
 
 function wireShortcuts() {
