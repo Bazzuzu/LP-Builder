@@ -1,7 +1,7 @@
 // Text & Media — spec doc 39. Editorial split with 0, 1 or 2 images.
 import { ARCHETYPE } from '../model/enums.js';
 import { blankRich, cls, ctaLink, dynamicShell, esc, img, rich } from '../render/html.js';
-import { RT_FULL, advancedGroup, all, appearanceGroup, contentGroup, ctaGroup, headingFields, imgField, mediaGroup, needMedia, needRich, needText } from './_common.js';
+import { RT_FULL, advancedGroup, all, appearanceGroup, contentGroup, ctaFields, headingFields, imgField, mediaGroup, needMedia, needRich, needText } from './_common.js';
 
 const hasMedia = (/** @type {any} */ p) => p.media_mode !== 'No Photo';
 
@@ -21,8 +21,11 @@ export default {
       // rather than being a second, optional line under one.
       ...headingFields({ required: true, sub: false }),
       { key: 'paragraph', kind: 'richtext', label: 'Text', required: true, tools: RT_FULL },
+      // The button lives here rather than in a group of its own: whether this section ends
+      // in a call to action belongs with what it says, and its two settings are not worth
+      // a second panel to open.
+      ...ctaFields('cta'),
     ]),
-    ctaGroup('cta'),
     mediaGroup([
       { key: 'media_mode', kind: 'segmented', label: 'Images', default: '1 Photo',
         options: [{ value: 'No Photo', label: 'None' }, { value: '1 Photo', label: '1' }, { value: '2 Photos', label: '2' }] },

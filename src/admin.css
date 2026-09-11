@@ -163,6 +163,7 @@ html[data-tips="off"] .f-tip{display:none}
 .fs-body{padding:2px 6px 10px}
 
 .f{margin-bottom:10px}
+.f-sub{margin-left:6px;padding-left:12px;border-left:1px solid var(--line)}
 .f-label{display:flex;align-items:center;gap:5px;margin-bottom:4px;color:var(--ink-2);font-size:12px}
 .f-label .req{color:var(--danger)}
 .f-help{color:var(--ink-3);font-size:11px;margin-top:3px;line-height:1.4}

@@ -31,7 +31,10 @@ export function renderField(f, ctx, keyPrefix = '') {
 
   const path = keyPrefix + f.key;
   const errs = ctx.errors.get(path) || [];
-  const wrap = el('.f' + (errs.length ? '.has-err' : ''));
+  // `sub` marks a field that only exists because a switch above it is on — drawn indented
+  // against a rule, so the panel shows what turned it on instead of two inputs appearing
+  // from nowhere.
+  const wrap = el('.f' + (errs.length ? '.has-err' : '') + (f.sub ? '.f-sub' : ''));
   const build = WIDGETS[f.kind] || WIDGETS.text;
 
   if (f.kind !== 'toggle' && f.label) {

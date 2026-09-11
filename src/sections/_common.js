@@ -106,22 +106,36 @@ export const advancedGroup = (fields = []) => ({
 });
 
 /**
- * A CTA button. `toggle: false` makes the button unconditional.
+ * A CTA button, as fields rather than a group — so a section can put it at the end of its
+ * Content instead of behind a collapsed panel of its own. A button IS content: whether the
+ * section ends in a call to action is the same kind of decision as what it says, and it was
+ * one field's worth of settings hidden behind one more disclosure.
+ *
+ * The switch owns the two fields under it: `when` reveals them, and `sub` indents them, so
+ * the panel shows the relationship rather than leaving two inputs to appear from nowhere.
+ * `toggle: false` makes the button unconditional and drops the switch.
+ * @param {string} [key] @param {{ toggle?: boolean, label?: string, href?: string }} [opts]
+ */
+export const ctaFields = (key = 'cta', { toggle = true, label = 'Learn more', href = '#lead-modal' } = {}) => {
+  const on = (/** @type {any} */ p, /** @type {any} */ get) => !toggle || get(`${key}.on`);
+  return [
+    // Labelled "Button", not "Show button": every other switch in the editor is named after
+    // the thing it turns on ("Region tabs", "Trustpilot feed"), not after the turning on.
+    ...(toggle ? [{ key: `${key}.on`, kind: 'toggle', label: 'Button', default: false }] : []),
+    { key: `${key}.label`, kind: 'text', label: 'Label', default: label, sub: toggle, when: on },
+    { key: `${key}.href`, kind: 'text', label: 'Link', default: href, sub: toggle, when: on,
+      help: 'Relative path, absolute URL, or #lead-modal to open the lead form.' },
+  ];
+};
+
+/**
+ * The same button as a group of its own, for a section whose CTA is not part of its copy.
  * @param {string} [key] @param {{ title?: string, toggle?: boolean, label?: string, href?: string }} [opts]
  */
-export const ctaGroup = (key = 'cta', { title = 'Button', toggle = true, label = 'Learn more', href = '#lead-modal' } = {}) => ({
+export const ctaGroup = (key = 'cta', { title = 'Button', ...opts } = {}) => ({
   title,
   open: false,
-  fields: [
-    // Labels are bare inside a group already called "Button" — "Button label" in the
-    // "Button" group is the panel telling the author twice where they are.
-    ...(toggle ? [{ key: `${key}.on`, kind: 'toggle', label: 'Show button', default: false }] : []),
-    { key: `${key}.label`, kind: 'text', label: 'Label', default: label,
-      when: (/** @type {any} */ p, /** @type {any} */ get) => !toggle || get(`${key}.on`) },
-    { key: `${key}.href`, kind: 'text', label: 'Link', default: href,
-      help: 'Relative path, absolute URL, or #lead-modal to open the lead form.',
-      when: (/** @type {any} */ p, /** @type {any} */ get) => !toggle || get(`${key}.on`) },
-  ],
+  fields: ctaFields(key, opts),
 });
 
 /**
