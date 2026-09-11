@@ -102,14 +102,20 @@ export default {
 .faq-a p:last-child{margin-bottom:0}
 .faq-a a{color:inherit;text-decoration:underline}
 
-@media (max-width:1023px){ .faq-list.c2{grid-template-columns:1fr} }
+/* The grid collapses here, so the divider correction belongs here too. The last-row flag is
+   written into the HTML from the DESKTOP column count; once there is one column, "last row"
+   is the last item and nothing else, and that flag is no longer true about the layout.
+   Keeping this correction in the 767px query left a gap between 768 and 1023 where a stacked
+   two-column FAQ dropped a divider in the middle of the list.
+   (No backticks anywhere in this string: the whole css block is a JS template literal.) */
+@media (max-width:1023px){
+  .faq-list.c2{grid-template-columns:1fr}
+  .faq-item{border-bottom:1px solid var(--line)}
+  .faq-item:last-child{border-bottom:0}
+}
 @media (max-width:767px){
   .faq-sec .wrap{max-width:var(--container);padding:0 var(--gutter)}
   .faq-sec{padding:var(--section-y) 0}
-  /* Single column below the breakpoint, so "last row" is the last item and nothing else —
-     the two-column class the renderer wrote is no longer the truth about the layout. */
-  .faq-item{border-bottom:1px solid var(--line)}
-  .faq-item:last-child{border-bottom:0}
 }
 `,
 
