@@ -21,7 +21,9 @@ export default {
     contentGroup([
       // This section's supporting copy is a real paragraph rather than a subheading, so it
       // replaces `subheading` in the standard heading block instead of sitting beside it.
-      ...headingFields({ required: true, sub: false }),
+      // No size or alignment either: the heading shares a fixed two-column layout with the
+      // fact list, which neither a larger scale nor centring has anywhere to go.
+      ...headingFields({ required: true, sub: false, scale: false }),
       { key: 'primary_paragraph', kind: 'richtext', label: 'Text', required: true, tools: RT_FULL },
       { key: 'secondary_paragraph', kind: 'richtext', label: 'Footnote', tools: RT_FULL,
         help: 'Optional small print under the fact list, e.g. a disclaimer.' },

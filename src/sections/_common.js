@@ -50,16 +50,21 @@ export const GROUP = {
  * A section header's own fields — the title, its supporting line, and how big and where
  * they sit. Returned as a plain array rather than a group of its own: a header IS content,
  * and giving it a second panel only made the author open two groups to write one sentence.
+ * `scale: false` drops the size and alignment controls for a section whose heading is fixed
+ * by its own layout — the value still comes from `defaults`, it simply stops being a choice.
  * @param {{ titleLabel?: string, required?: boolean, subLabel?: string, subHelp?: string,
- *           sub?: boolean, size?: string, align?: string }} [opts]
+ *           sub?: boolean, scale?: boolean, size?: string, align?: string }} [opts]
  */
 export const headingFields = ({ titleLabel = 'Title', required = false, subLabel = 'Subtitle',
-  subHelp = 'Hidden when empty.', sub = true, size = 'SIZE_M', align = 'ALIGN_LEFT' } = {}) => [
+  subHelp = 'Hidden when empty.', sub = true, scale = true,
+  size = 'SIZE_M', align = 'ALIGN_LEFT' } = {}) => [
   { key: 'section_title', kind: 'text', label: titleLabel, required,
     help: required ? undefined : 'Hidden when empty.' },
   ...(sub ? [{ key: 'subheading', kind: 'richtext', label: subLabel, tools: RT_FULL, help: subHelp }] : []),
-  { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: size, options: SIZE_OPTS },
-  { key: 'heading_align', kind: 'segmented', label: 'Alignment', default: align, options: ALIGN_OPTS },
+  ...(!scale ? [] : [
+    { key: 'heading_size', kind: 'segmented', label: 'Heading size', default: size, options: SIZE_OPTS },
+    { key: 'heading_align', kind: 'segmented', label: 'Alignment', default: align, options: ALIGN_OPTS },
+  ]),
 ];
 
 /** @param {any[]} fields @param {{ open?: boolean }} [opts] */
