@@ -205,6 +205,38 @@ const WIDGETS = {
   },
 
   /**
+   * A scrim: its colour and its strength on one line, under one label. They are a single
+   * decision — how much to darken the photograph underneath — and as two fields they cost
+   * two labels, two rows and four words to say it. Swatches only, no hex: an overlay is
+   * only ever a neutral, and the hex box was the widest part of a control whose whole range
+   * is black or white.
+   * `f.key` holds the colour, `f.opacityKey` the 0–100 strength beside it.
+   */
+  overlay(f, ctx, path) {
+    const swatches = el('.color-presets');
+    const current = String(ctx.get(path) ?? f.default ?? '#000000').toLowerCase();
+    for (const p of f.presets || []) {
+      swatches.append(el('button', {
+        type: 'button', title: p.label, style: { background: p.value },
+        class: String(p.value).toLowerCase() === current ? 'on' : '',
+        // `structural` repaints the panel, which is what moves the `on` ring — no need to
+        // shuffle classes by hand here.
+        onclick: () => ctx.set(path, p.value, { structural: true }),
+      }));
+    }
+    const value = Number(ctx.get(f.opacityKey) ?? f.opacityDefault ?? 50);
+    const out = el('span.f-out', { text: value + '%' });
+    const range = el('input', {
+      type: 'range', min: 0, max: 100, value,
+      oninput: (/** @type {any} */ e) => {
+        out.textContent = e.target.value + '%';
+        ctx.set(f.opacityKey, +e.target.value, { coalesce: f.opacityKey });
+      },
+    });
+    return el('.f-row.overlay-f', {}, [swatches, range, out]);
+  },
+
+  /**
    * Image + alt in one control. They are never separated in the UI because a content image
    * without alt fails validation (SYS-02 §6), and splitting them invites forgetting one.
    */
@@ -241,8 +273,10 @@ const WIDGETS = {
         }
       } else {
         box.append(el('.img-drop', { text: '⬆ Click or drop an image' }));
+        // Only the ratio, which `renderField` knows nothing about. `f.help` is NOT repeated
+        // here — renderField already prints it under the widget, and printing it inside as
+        // well put "PNG, JPG or WebP." on the page twice, one line apart.
         if (f.ratio) box.append(el('.img-hint.f-tip', { text: `Container ratio ${f.ratio}` }));
-        if (f.help) box.append(el('.img-hint.f-tip', { text: f.help }));
         box.onclick = choose;
       }
     };

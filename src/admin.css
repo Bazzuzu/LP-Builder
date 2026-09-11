@@ -212,6 +212,9 @@ textarea.inp{resize:vertical;min-height:60px}
 .color-disc[open]>summary::before{content:"▾"}
 .color-disc>summary:hover{color:var(--ink-2)}
 .color-custom{margin-top:5px}
+.overlay-f{gap:10px}
+.overlay-f .color-presets{flex:0 0 auto}
+.overlay-f input[type=range]{flex:1;min-width:0}
 .alpha-row{display:flex;align-items:center;gap:6px;margin-top:5px}
 .alpha-row input[type=range]{flex:1}
 

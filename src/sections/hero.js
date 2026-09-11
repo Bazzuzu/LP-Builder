@@ -51,13 +51,6 @@ export default {
       { key: '_footnote_note', kind: 'note', label: '',
         text: 'The price footnote/disclaimer lives in the Footer\'s legal text (Global Settings > Footer) — one disclaimer, shared by every page, instead of one per Hero.' },
 
-      // The two logo slots sat in a group of their own, which meant opening a second panel
-      // to put a carrier mark next to a price that is edited three fields above.
-      { key: 'has_price_aside_logo', kind: 'toggle', label: 'Logo beside the price', default: false },
-      imgField('price_aside_logo', 'Aside logo', { ratio: '2:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_aside_logo }),
-      { key: 'has_price_bottom_logo', kind: 'toggle', label: 'Logo under the price', default: false },
-      imgField('price_bottom_logo', 'Bottom logo', { ratio: '10:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_bottom_logo }),
-
       { key: 'cta_button_text', kind: 'text', label: 'Lead form button', default: 'Check Your Price' },
       { key: '_form_note', kind: 'note', label: '',
         text: 'The form fields are fixed by the lead contract (doc 21) and shared with the modal.' },
@@ -98,15 +91,21 @@ export default {
         presets: ACCENT_PRESETS, when: onEyebrow('Badge') },
     ] },
 
-    // The backgrounds and the scrims over them: one subject, so one group. The overlay is
-    // a property of the photograph, not a separate styling decision made elsewhere.
+    // Every image the Hero holds, in the order they stack: each background followed by its
+    // own scrim, then the two marks that sit with the price. The overlay is a property of
+    // the photograph above it, not a styling decision taken somewhere else — so it needs no
+    // "Desktop"/"Mobile" in its label either, the background it follows already said which.
     { title: 'Media', open: false, fields: [
       imgField('desktop_bg_image', 'Desktop background', { hint: 'PNG, JPG or WebP.', decorative: true }),
-      { key: 'desktop_overlay_color', kind: 'color', label: 'Desktop overlay', default: '#000000', presets: SCRIM_PRESETS },
-      { key: 'desktop_overlay_opacity', kind: 'range', label: 'Desktop overlay opacity', default: 50, min: 0, max: 100, unit: '%' },
+      { key: 'desktop_overlay_color', kind: 'overlay', label: 'Overlay', default: '#000000',
+        presets: SCRIM_PRESETS, opacityKey: 'desktop_overlay_opacity', opacityDefault: 50 },
       imgField('mobile_bg_image', 'Mobile background', { hint: 'Falls back to the desktop image when empty.', decorative: true }),
-      { key: 'mobile_overlay_color', kind: 'color', label: 'Mobile overlay', default: '#000000', presets: SCRIM_PRESETS },
-      { key: 'mobile_overlay_opacity', kind: 'range', label: 'Mobile overlay opacity', default: 50, min: 0, max: 100, unit: '%' },
+      { key: 'mobile_overlay_color', kind: 'overlay', label: 'Overlay', default: '#000000',
+        presets: SCRIM_PRESETS, opacityKey: 'mobile_overlay_opacity', opacityDefault: 50 },
+      { key: 'has_price_aside_logo', kind: 'toggle', label: 'Logo beside the price', default: false },
+      imgField('price_aside_logo', 'Aside logo', { ratio: '2:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_aside_logo }),
+      { key: 'has_price_bottom_logo', kind: 'toggle', label: 'Logo under the price', default: false },
+      imgField('price_bottom_logo', 'Bottom logo', { ratio: '10:1', decorative: true, when: (/** @type {any} */ p) => p.has_price_bottom_logo }),
     ] },
 
     { title: 'Appearance', open: false, fields: [
