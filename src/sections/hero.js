@@ -158,13 +158,13 @@ export default {
       props.eyebrow_mode === 'Text' ? needText(props, 'eyebrow_text', 'Eyebrow text') : [],
       props.eyebrow_mode === 'Timer' ? needText(props, 'end_date', 'Countdown end date') : [],
       props.eyebrow_mode === 'Badge'
-        ? all(needMedia(props, 'badge_icon', 'Badge icon', { decorative: true }), needText(props, 'badge_label', 'Badge label'))
+        ? all(needMedia(props, 'badge_icon', 'Badge icon'), needText(props, 'badge_label', 'Badge label'))
         : [],
       (props.eyebrow_mode === 'Text' || props.eyebrow_mode === 'Timer') && props.has_inline_badge
         ? needText(props, 'inline_badge_label', 'Inline badge label')
         : [],
-      props.has_price_aside_logo ? needMedia(props, 'price_aside_logo', 'Aside logo', { decorative: true }) : [],
-      props.has_price_bottom_logo ? needMedia(props, 'price_bottom_logo', 'Bottom logo', { decorative: true }) : [],
+      props.has_price_aside_logo ? needMedia(props, 'price_aside_logo', 'Aside logo') : [],
+      props.has_price_bottom_logo ? needMedia(props, 'price_bottom_logo', 'Bottom logo') : [],
     );
   },
 

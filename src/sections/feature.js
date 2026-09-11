@@ -76,7 +76,7 @@ export default {
   validate(props) {
     const items = activeItems(props);
     return all(...items.flatMap((it, i) => [
-      needMedia({ icon: it.icon }, 'icon', `Item ${i + 1} icon`, { decorative: true })
+      needMedia({ icon: it.icon }, 'icon', `Item ${i + 1} icon`)
         .map((x) => ({ ...x, path: `items.${i}.icon` })),
       needText(it, 'title', `Item ${i + 1} title`).map((x) => ({ ...x, path: `items.${i}.title` })),
       props.has_paragraph !== false

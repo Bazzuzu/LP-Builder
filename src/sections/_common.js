@@ -139,8 +139,10 @@ export const ctaGroup = (key = 'cta', { title = 'Button', ...opts } = {}) => ({
 });
 
 /**
- * An image field. The widget edits the asset and its alt text together, because a content
- * image without alt fails L1 (SYS-02 §6) and the two should never be separated in the UI.
+ * An image field. The widget edits the asset and its alt text together — alt is optional
+ * now, but it is still a property of this picture and belongs beside it, not in some list
+ * of accessibility settings elsewhere. `decorative` hides the alt input entirely, for marks
+ * that carry no meaning of their own (a logo beside a price, a badge icon).
  * @param {string} key @param {string} label
  * @param {{ hint?: string, decorative?: boolean, ratio?: string,
  *           when?: (props: Record<string, any>, get: (path: string) => any) => any }} [opts]
@@ -165,14 +167,18 @@ export const needRich = (/** @type {any} */ props, /** @type {string} */ path, /
   blankRich(getPath(props, path)) ? [mk('E100', path, `${label} is required.`)] : [];
 
 /**
- * A media field is complete when it has an asset AND, unless decorative, alt text.
+ * A media field is complete when it has an asset. Alt text is offered but not demanded: it
+ * used to be an L1 issue (SYS-02 §6), which blocked publishing a page over a caption nobody
+ * had written yet. `decorative` still decides whether the alt input is shown at all — it is
+ * now only about the UI, not about validation.
+ *
+ * The cost is real: an image with no alt reaches a screen reader as nothing. The editor
+ * still pre-fills a guess from the filename, so the usual path leaves alt filled in.
  * @returns {Issue[]}
  */
-export function needMedia(props, path, label, { decorative = false } = {}) {
+export function needMedia(props, path, label) {
   const v = getPath(props, path);
-  if (!v?.asset && !v?.url) return [mk('E101', path, `${label} is required.`)];
-  if (!decorative && isBlank(v.alt)) return [mk('E100', `${path}.alt`, `${label} needs alt text.`)];
-  return [];
+  return (!v?.asset && !v?.url) ? [mk('E101', path, `${label} is required.`)] : [];
 }
 
 /** Run several validators and flatten. @param {...Issue[]} lists @returns {Issue[]} */

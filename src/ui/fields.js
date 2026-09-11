@@ -240,8 +240,9 @@ const WIDGETS = {
   },
 
   /**
-   * Image + alt in one control. They are never separated in the UI because a content image
-   * without alt fails validation (SYS-02 §6), and splitting them invites forgetting one.
+   * Image + alt in one control. Alt no longer blocks publishing, but it is a property of
+   * this picture, so it stays with it rather than moving to a list of its own where nobody
+   * would connect the two.
    */
   image(f, ctx, path) {
     const box = el('.img-f');
@@ -268,7 +269,7 @@ const WIDGETS = {
         ]));
         if (!f.decorative) {
           box.append(el('.img-alt', {}, [
-            el('.f-label', {}, ['Alt text', el('span.req', { text: '*' })]),
+            el('.f-label', {}, ['Alt text']),
             el('input.inp', { type: 'text', value: v.alt || '',
               placeholder: 'What the image shows',
               oninput: (e) => write({ alt: e.target.value }) }),
