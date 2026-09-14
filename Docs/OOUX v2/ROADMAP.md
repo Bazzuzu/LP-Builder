@@ -1,143 +1,144 @@
-# ROADMAP — что сознательно не сделано
+# ROADMAP — what was deliberately not built
 
-Здесь живут все пункты, помеченные в спеках маркером `PLANNED`, и объекты, которые модель
-намеренно не описывает.
+Every item marked `PLANNED` in the specs lives here, together with the objects the model
+intentionally does not describe.
 
-Отличие от `DEFECTS.md`: там код написан и не работает. Здесь кода нет и не было. Пункт
-отсюда закрывается решением делать, пункт оттуда — правкой бага.
+How this differs from `DEFECTS.md`: there, code was written and does not work. Here, there is no
+code and never was. An item here is closed by deciding to build it; an item there is closed by
+fixing a bug.
 
-**Пока пункт здесь, ссылаться на него как на существующее поведение нельзя.**
+**While an item is here, it may not be referenced as existing behaviour.**
 
 ---
 
-## 1. Публикация и жизненный цикл страницы
+## 1. Publishing and the page lifecycle
 
-Самый крупный пробел: **механизма публикации не существует**. `canPublish()` написан и
-вызывается только из тестов; `status` присваивается один раз при создании страницы и больше
-не меняется нигде в `src/`. Каждая страница навсегда `Draft`.
+The largest gap: **there is no publishing mechanism**. `canPublish()` is written and is called
+only from the test suite; `status` is assigned once when a page is created and never changes
+anywhere in `src/`. Every page is a `Draft` forever.
 
-| Пункт | Где описано | Комментарий |
+| Item | Where described | Note |
 |---|---|---|
-| Переход `Draft → Published` и гейт публикации | SYS-00 §5, 20 §3 | Валидатор готов, вызывать некому |
-| Unpublish с кодом 410 | 20 §3 | |
-| Archive как мягкое удаление | 20 §3 | Существующее удаление безвозвратно и без подтверждения |
-| Duplicate Page | 20 §3, §5.4 | `freeCopySlug()` уже есть, им пользуется только импорт |
-| L1-проверка `meta_title` / `meta_description` | 20 §4.2 | `page.meta` не валидируется вообще |
-| 301-редирект при смене slug | 20 §5.2a | |
-| Guard на «отставленные» slug, занятые редиректами | 20 §5.2 | Комментарий в коде обещает это покрытие; его нет |
+| The `Draft → Published` transition and the publish gate | SYS-00 §5, 20 §3 | The validator is ready; nobody calls it |
+| Unpublish with a 410 response | 20 §3 | |
+| Archive as a soft delete | 20 §3 | The delete that exists is permanent and unconfirmed |
+| Duplicate Page | 20 §3, §5.4 | `freeCopySlug()` already exists; only the importer uses it |
+| L1 checks on `meta_title` / `meta_description` | 20 §4.2 | `page.meta` is not validated at all |
+| A 301 redirect on slug change | 20 §5.2a | |
+| A guard against retired slugs held by redirects | 20 §5.2 | A code comment promises this coverage; it does not exist |
 
-## 2. Уровень валидации L2
+## 2. Validation level L2
 
-`E200` объявлен в реестре ошибок и не конструируется ни одним вызовом. `setSectionProp`
-пишет любое значение по любому пути без проверок. Формат, регулярные выражения, отклонение
-сохранения — ничего этого нет.
+`E200` is declared in the error registry and constructed by no call site. `setSectionProp` writes
+any value to any path with no checks. No format, no regular expression, no rejected save.
 
-| Пункт | Где описано |
+| Item | Where described |
 |---|---|
-| Весь уровень L2 и код `E200` | SYS-02 §4 |
-| Формат и уникальность `anchor_id` (`^[a-z0-9-]+$`) | 10 §4.1 |
-| Регулярное выражение email в обеих формах | 21 §3, 34 §5.2 |
+| The whole L2 level and the `E200` code | SYS-02 §4 |
+| `anchor_id` format and uniqueness (`^[a-z0-9-]+$`) | 10 §4.1 |
+| The email regular expression in both forms | 21 §3, 34 §5.2 |
 | `return_date >= departure_date` | 21 §3 |
-| Снятие ведущего символа валюты в поле цены | 30 §4.5 |
-| Проверка, что фрагментная ссылка CTA ведёт в существующий `anchor_id` | 38 §6.2 |
-| Закрытый список `REGIONS` на сохранённых данных | SYS-02 §2 |
+| Stripping a typed leading currency symbol from the price field | 30 §4.5 |
+| Checking that a fragment CTA points at an existing `anchor_id` | 38 §6.2 |
+| Closed-list enforcement of `REGIONS` on stored data | SYS-02 §2 |
 
-## 3. Лидогенерация
+## 3. Lead generation
 
-Формы собирают часть контракта, отправлять их некуда. **Отсутствие пайплайна — это план;
-ложное подтверждение об отправке — дефект, см. `DEFECTS.md` D-02.**
+The forms collect part of the contract and there is nowhere to send it. **The absence of a
+pipeline is a plan; the false confirmation of submission is a defect — see `DEFECTS.md` D-02.**
 
-| Пункт | Где описано |
+| Item | Where described |
 |---|---|
-| Общий дескриптор полей, из которого рендерятся обе формы | SYS-99 §1 |
-| В модалке: `origin`, обе даты, `trip_type`, `cabin_class`, `passengers` | 21 §3 |
-| Блок `consent` и блокировка отправки до согласия | 21 §3, SYS-99 §4 |
-| Блок `telemetry`: UTM, `gclid`, `referrer`, `session_id`, `landing_url` | SYS-99 §4 |
-| Эндпоинт CRM и сам запрос | SYS-99 §5 |
-| Состояния загрузки, ошибки и восстановления введённых данных | 21 §5 |
-| Подстановка `default_origin` / `default_destination` из страницы в модалку | 20 §5.3 |
-| `row_id` и цена строки в payload | 31 §2, 50 §5.5 |
-| Инертность фона под модалкой | 21 §5 |
+| A shared field descriptor both forms render from | SYS-99 §1 |
+| In the modal: `origin`, both dates, `trip_type`, `cabin_class`, `passengers` | 21 §3 |
+| The `consent` block and blocking submission until it is checked | 21 §3, SYS-99 §4 |
+| The `telemetry` block: UTM, `gclid`, `referrer`, `session_id`, `landing_url` | SYS-99 §4 |
+| The CRM endpoint and the request itself | SYS-99 §5 |
+| Loading, error and data-preservation states | 21 §5 |
+| Hydrating the modal from the page's `default_origin` / `default_destination` | 20 §5.3 |
+| `row_id` and the row's price in the payload | 31 §2, 50 §5.5 |
+| Inerting the background behind the modal | 21 §5 |
 
-## 4. Редакторы, которых нет
+## 4. Editors that do not exist
 
-Поля существуют в модели и в рендере, а задать их в интерфейсе нечем. Значение достижимо
-только через импорт JSON.
+The fields exist in the model and in the renderer, and there is nothing in the interface to set
+them. The value is reachable only through imported JSON.
 
-| Поле | Где описано |
+| Field | Where described |
 |---|---|
 | `og_image` | 20 §4.2 |
 | `navigation_columns`, `social_channels`, `accreditation_seals` | 33 §4.2 |
 | `phone_image` | 34 §4.2 |
-| `anchor_id` у шести секций: Hero, Prices, Trust, Footer, Subscription, Contact | 10 §4.1 |
+| `anchor_id` on six sections: Hero, Prices, Trust, Footer, Subscription, Contact | 10 §4.1 |
 
-Последний пункт стоит отдельного внимания: якорную ссылку в навигации чаще всего ведут
-именно на эти секции, и они — единственные, у кого поля нет.
+That last one deserves attention on its own: an anchor link in the navigation most often points
+at exactly these sections, and they are the only ones without the field.
 
-## 5. Атрибуты, описанные в v1 и не реализованные
+## 5. Attributes described in v1 and not implemented
 
-Перечислены, чтобы их не добавили обратно по недосмотру и чтобы было видно, что их
-отсутствие — решение, а не потеря.
+Listed so that nobody re-adds them by oversight, and so that their absence reads as a decision
+rather than a loss.
 
-| Атрибут | Секция | Почему в списке |
+| Attribute | Section | Why it is on this list |
 |---|---|---|
-| `mobile_fallback_color` | Hero 30 §4.2 | Один цвет подложки на всех ширинах |
-| `price_footnote` | Hero 30 §4.5 | Сноска переехала в глобальный текст футера |
-| `badge_data` как объект | Hero 30 §4.3 | Разложен на три плоских поля |
-| `title_color` / `title_weight` / `title_italic` | Prices 31 §4.2 | Убраны сознательно 11.09.2026 |
-| `text_color` | Price Row 50 §4.2 | Убран вместе с ними |
-| `media_side` | Story & Specs 36 §4.1 | Раскладка секции фиксированная |
-| `card_id`, `item_id` | 51 §4, 52 §4 | Тождество — индекс массива |
-| `operational_notice`, `office_location` | Contact 35 §4.2 | Не хранятся и не рендерятся |
-| Каналы `phone_primary` / `phone_international` / `email_support` | Contact 35 §4.2 | Реальные ключи — `chat` / `phone` / `email`; международного канала нет |
-| Контентные payload'ы пресетов Feature | 41 §5 | Пресет меняет только раскладку |
+| `mobile_fallback_color` | Hero 30 §4.2 | One fallback colour at every width |
+| `price_footnote` | Hero 30 §4.5 | The footnote moved into the footer's global legal text |
+| `badge_data` as an object | Hero 30 §4.3 | Decomposed into three flat fields |
+| `title_color` / `title_weight` / `title_italic` | Prices 31 §4.2 | Removed deliberately on 11 September 2026 |
+| `text_color` | Price Row 50 §4.2 | Removed with them |
+| `media_side` | Story & Specs 36 §4.1 | The section's layout is fixed |
+| `card_id`, `item_id` | 51 §4, 52 §4 | Identity is the array index |
+| `operational_notice`, `office_location` | Contact 35 §4.2 | Neither stored nor rendered |
+| Channels `phone_primary` / `phone_international` / `email_support` | Contact 35 §4.2 | The real keys are `chat` / `phone` / `email`; there is no international channel |
+| Feature preset content payloads | 41 §5 | A preset changes layout only |
 
-## 6. Гарантии, которые описаны и ничем не обеспечены
+## 6. Guarantees that are described and enforced by nothing
 
-| Пункт | Где описано | Что на деле |
+| Item | Where described | What actually happens |
 |---|---|---|
-| Уникальность якорей на странице | SYS-00 §4 | Не проверяется вообще; два Hero в слоте 0 не дают ни одной ошибки. Достижимо через импорт |
-| Проверки ключей, слотов и архетипов при импорте | 20 §3 | `sectionsFrom()` не проверяет ничего — это единственный путь, которым `E008` и дубли якорей вообще достижимы |
-| Guard уровня модели на удаление и скрытие якорей | 10 §5 | Защита только в интерфейсе; вызов из консоли или импорт удаляют Hero |
-| «Каждый телефон и email кликабельны» | Contact 35 §5.2 | `tel:` и `mailto:` вписаны руками в rich-text; ничто их не генерирует и не проверяет |
-| Живая лента Trustpilot | Trust 32 §1 | Ничего не запрашивается; `business_unit_id` пуст, `cache_ttl_minutes` не читается |
-| Отклонённое перемещение секции сообщает `E008` | SYS-00 §3.1.2 | `moveTo()` молча возвращает `false`; условие недостижимо |
+| Anchor uniqueness on a page | SYS-00 §4 | Not checked at all; two Heroes in slot 0 raise no issue. Reachable through import |
+| Key, slot and archetype checks on import | 20 §3 | `sectionsFrom()` checks nothing — the only path by which `E008` and duplicate anchors are reachable at all |
+| A model-level guard on deleting or hiding anchors | 10 §5 | Protection is in the UI only; a console call or an import removes a Hero |
+| "Every phone and email is clickable" | Contact 35 §5.2 | `tel:` and `mailto:` are typed by hand into rich text; nothing generates or validates them |
+| A live Trustpilot feed | Trust 32 §1 | Nothing is fetched; `business_unit_id` is empty and `cache_ttl_minutes` is never read |
+| A rejected section move reports `E008` | SYS-00 §3.1.2 | `moveTo()` silently returns `false`; the condition is unreachable |
 
-## 7. Дисциплина модели
+## 7. Model discipline
 
-| Пункт | Зачем |
+| Item | Why |
 |---|---|
-| Тест, читающий таблицу ключей из `SYS-02 §1` и сверяющий её с `COMPONENT_KEYS` | Guard реестра сверяет код с кодом. Ровно так `SECTION_FAQ` прожил в системе без документа |
-| Тесты на имена и значения токенов, на матрицу дефолтов, на коды L1 | Сейчас в `test/` нет ни одного такого утверждения |
-| Код ошибки для дублированного якоря | `E008` сейчас несёт два несвязанных смысла |
-| `faq.js` объявляет `doc: 0` | Должно быть `doc: 42` |
-| Перевод литеральных `font-size` на токены | 77 литеральных объявлений против 11 обращений к переменной; `--title-*`, `--body-m/s`, `--label-*` не читает ни одно правило |
-| Удаление мёртвых экспортов `enums.js` | `LEAD_ANCHOR`, `BREAKPOINT`, `maxInstances`, `PAGE_STATUSES`, `HEADING_SIZES`, `HEADING_ALIGNS` не импортируются нигде |
+| A test that reads the key table out of `SYS-02 §1` and compares it to `COMPONENT_KEYS` | The registry guard compares code to code. That is exactly how `SECTION_FAQ` lived in the system without a document |
+| Tests for token names and values, the defaults matrix, and the L1 codes | `test/` currently asserts none of these |
+| An error code for a duplicated anchor | `E008` currently carries two unrelated meanings |
+| `faq.js` declares `doc: 0` | It should be `doc: 42` |
+| Moving literal `font-size` declarations onto tokens | 77 literal declarations against 11 that read a variable; `--title-*`, `--body-m/s` and `--label-*` are read by no rule |
+| Removing the dead exports in `enums.js` | `LEAD_ANCHOR`, `BREAKPOINT`, `maxInstances`, `PAGE_STATUSES`, `HEADING_SIZES`, `HEADING_ALIGNS` are imported nowhere |
 
-## 8. Объекты, которые модель не описывает
+## 8. Objects the model does not describe
 
-Перенесено из `BACKLOG.md` v1 и проверено на актуальность.
+Carried over from v1's `BACKLOG.md` and checked for currency.
 
-| Объект | Кто на него ссылается | Почему нужен |
+| Object | Who refers to it | Why it is needed |
 |---|---|---|
-| `SITE_HEADER` (шапка/навигация) | 30 §4.1 — `theme_mode` переключает логотип, меню и телефон | Hero управляет чужими ассетами; объекта не существует. Телефон в шапке сейчас захардкожен в модуле и расходится с номером в Contact |
-| `ASSET` / медиатека | все файловые поля | Нет переиспользования между страницами, лимитов веса, srcset, конвертации |
-| `ROLE` / права | 32, 33, 34, 35 | Read-only режимы описаны, субъекты прав — нет |
-| `GlobalDomainConfig` | 20 §2 объявлен родителем страницы | Схемы нет |
+| `SITE_HEADER` (header / navigation) | 30 §4.1 — `theme_mode` switches the logo, menu and phone | Hero manages assets belonging to an object that does not exist. The header's phone number is currently hardcoded in the module and differs from the one in Contact |
+| `ASSET` / media library | every file field | No reuse across pages, no weight limits, no srcset, no conversion |
+| `ROLE` / permissions | 32, 33, 34, 35 | Read-only modes are described; the subjects holding those permissions are not |
+| `GlobalDomainConfig` | 20 §2 declares it the page's parent | There is no schema |
 
-`PAGE_TEMPLATE` из этого списка **выбыл**: шаблоны получили контракт — встроенные в
-`src/presets/page-templates.js`, сохранённые в `src/presets/templates/`, плюс импорт и
-экспорт страницы. Описано в 20 §3.
+`PAGE_TEMPLATE` has **left** this list: templates now have a contract — built-in ones in
+`src/presets/page-templates.js`, saved ones in `src/presets/templates/`, plus page import and
+export. Described in 20 §3.
 
-## 9. Механики, которых нет
+## 9. Mechanics that do not exist
 
-- **Версионирование и превью.** Нет превью черновика, правки опубликованной страницы без
-  выкладки, отложенной публикации, отката, истории.
-- **Structured data.** Нет JSON-LD: `Offer` для таблицы тарифов, `FAQPage` для секции 42,
+- **Versioning and preview.** No draft preview, no editing a published page without shipping it,
+  no scheduled publication, no rollback, no history.
+- **Structured data.** No JSON-LD: `Offer` for the fare table, `FAQPage` for section 42,
   `BreadcrumbList`.
-- **Локализация.** Есть `target_country` / `target_region`, нет `locale` и связи языковых
-  версий. При этом `target_country` и `target_region` сейчас не читает вообще никто.
-- **Стратегия рендеринга.** 33 §5.3 обещает мгновенное обновление всех страниц при правке
-  футера — это подразумевает SSR/ISR и инвалидацию кэша; архитектура не зафиксирована.
-- **Форматирование валюты.** `Intl.NumberFormat('en', …)` с захардкоженной локалью; из
-  результата берётся только символ. `EUR/DE` даёт `€1.234`, а не `1.234 €`.
+- **Localisation.** There is `target_country` / `target_region` but no `locale` and no link
+  between language versions. And `target_country` and `target_region` are currently read by
+  nobody at all.
+- **Rendering strategy.** 33 §5.3 promises that editing the footer updates every page
+  immediately — which implies SSR/ISR and cache invalidation. The architecture is not settled.
+- **Currency formatting.** `Intl.NumberFormat('en', …)` with a hardcoded locale; only the symbol
+  is taken from the result. `EUR/DE` renders `€1.234`, not `1.234 €`.

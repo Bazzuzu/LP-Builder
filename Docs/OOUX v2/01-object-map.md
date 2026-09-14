@@ -9,63 +9,64 @@ DEPENDS_ON: SYS-00-ARCH, SYS-02-ENUMS
 TARGET_AUDIENCE: [LLM_AGENT, BACKEND_DEV, FRONTEND_DEV, ARCHITECT]
 ```
 
-Производный документ. Каноническая топология — `SYSTEM RULES/00_SYSTEM_ARCHITECTURE_AND_SLOTS.md`,
-канонический список ключей — `SYS-02 §1`. Здесь только карта; собственных правил нет.
+A derived document. The canonical topology is `SYSTEM RULES/00_SYSTEM_ARCHITECTURE_AND_SLOTS.md`;
+the canonical key list is `SYS-02 §1`. This is a map only — it carries no rules of its own.
 
 ---
 
-## 1. Дерево
+## 1. Tree
 
 ```
 [Landing Page Container]  (20_OBJECT_LANDING_PAGE)          localStorage `lpb.state.v2`
    │
-   ├── [Slot 00: FIXED ANCHOR] ──> [Hero]                   page-specific, ровно 1
+   ├── [Slot 00: FIXED ANCHOR] ──> [Hero]                   page-specific, exactly 1
    │
-   ├── [Slot 01: DYNAMIC CONTAINER] ──> [0..N динамических / статических модулей]
+   ├── [Slot 01: DYNAMIC CONTAINER] ──> [0..N dynamic / static modules]
    │
    ├── [Slot 02: FIXED ANCHOR] ──> [Prices] ── 1:N ──> [Price Row Item] (50)
    │
-   ├── [Slot 03: DYNAMIC CONTAINER] ──> [0..N динамических / статических модулей]
+   ├── [Slot 03: DYNAMIC CONTAINER] ──> [0..N dynamic / static modules]
    │
    ├── [Slot 04: DUAL-ROLE ANCHOR] ──> [Trust]              global data, page-level layout
    │
-   ├── [Slot 05: DYNAMIC CONTAINER] ──> [0..N динамических / статических модулей]
+   ├── [Slot 05: DYNAMIC CONTAINER] ──> [0..N dynamic / static modules]
    │
-   └── [Slot 06: DUAL-ROLE ANCHOR] ──> [Footer]             global data, read-only на странице
+   └── [Slot 06: DUAL-ROLE ANCHOR] ──> [Footer]             global data, read-only on the page
 
-Содержимое любого динамического контейнера (01 / 03 / 05):
-   ├── [Story & Specs]          0..N   ── 2..4 факта + 3 изображения          (36)
-   ├── [Multi-Card Grid]        0..N   ── 1:N ──> [Media Card Item] (2|3|4)   (37, 51)
-   ├── [Large Image Banner]     0..N   ── одно изображение + обязательная CTA (38)
-   ├── [Text & Media]           0..N   ── media_mode: 0 | 1 | 2 фото          (39)
-   ├── [Logo Marquee]           0..N   ── 1:N ──> [Logo Item]                 (40)
-   ├── [Feature]                0..N   ── 1:N ──> [Feature Item] (3|4)        (41, 52)
-   ├── [FAQ]                    0..N   ── 1:N ──> [FAQ Item] (1..20)          (42) ★
-   ├── [Static Subscription]    max 1 на страницу   (global content)          (34)
-   └── [Static Contact]         max 1 на страницу   (global content)          (35)
+Contents of any dynamic container (01 / 03 / 05):
+   ├── [Story & Specs]          0..N   ── 2..4 facts + 3 images                (36)
+   ├── [Multi-Card Grid]        0..N   ── 1:N ──> [Media Card Item] (2|3|4)    (37, 51)
+   ├── [Large Image Banner]     0..N   ── one image + a mandatory CTA          (38)
+   ├── [Text & Media]           0..N   ── media_mode: 0 | 1 | 2 photos         (39)
+   ├── [Logo Marquee]           0..N   ── 1:N ──> [Logo Item]                  (40)
+   ├── [Feature]                0..N   ── 1:N ──> [Feature Item] (3|4)         (41, 52)
+   ├── [FAQ]                    0..N   ── 1:N ──> [FAQ Item] (1..20)           (42) ★
+   ├── [Static Subscription]    max 1 per page      (global content)           (34)
+   └── [Static Contact]         max 1 per page      (global content)           (35)
 
-Вне дерева секций:
-   └── [Flight Quote Modal] (21) — один оверлей на каждый отрендеренный документ
-                                    (и в превью, и в экспорте), DOM id `lead-modal`;
-                                    вызывается строкой цены или любой CTA с href `#lead-modal`
+Outside the section tree:
+   └── [Flight Quote Modal] (21) — one overlay per rendered document (both in the
+                                    preview and in the export), DOM id `lead-modal`;
+                                    opened by a price row or any CTA with href `#lead-modal`
 
-Вне страницы:
+Outside the page:
    └── [Global Content Store] — localStorage `lpb.globals.v2`: footer, contact, trust,
-                                subscription. Страница читает, редактор страницы не пишет.
+                                subscription. The page reads it; the page editor does not
+                                write to it.
 ```
 
-★ — `FAQ` существовал в коде и не существовал ни в одном документе v1.
+★ — `FAQ` existed in the code and in none of the v1 documents.
 
 ---
 
-## 2. Состав
+## 2. Composition
 
-| Объект | `component_key` | Слоты | Кратность на странице | Статус |
+| Object | `component_key` | Slots | Multiplicity per page | Status |
 |---|---|---|---|---|
-| Hero (30) | `SECTION_HERO` | `00` | ровно 1 | `BUILT` |
-| Prices (31) | `SECTION_PRICES` | `02` | ровно 1 | `BUILT` |
-| Trust (32) | `SECTION_TRUST` | `04` | ровно 1 | `BUILT` |
-| Footer (33) | `SECTION_FOOTER` | `06` | ровно 1 | `BUILT` |
+| Hero (30) | `SECTION_HERO` | `00` | exactly 1 | `BUILT` |
+| Prices (31) | `SECTION_PRICES` | `02` | exactly 1 | `BUILT` |
+| Trust (32) | `SECTION_TRUST` | `04` | exactly 1 | `BUILT` |
+| Footer (33) | `SECTION_FOOTER` | `06` | exactly 1 | `BUILT` |
 | Subscription (34) | `SECTION_SUBSCRIPTION` | `01`,`03`,`05` | max 1 | `BUILT` |
 | Contact Us (35) | `SECTION_CONTACT` | `01`,`03`,`05` | max 1 | `BUILT` |
 | Story & Specs (36) | `SECTION_QUICK_FACTS` | `01`,`03`,`05` | 0..N | `BUILT` |
@@ -75,35 +76,36 @@ TARGET_AUDIENCE: [LLM_AGENT, BACKEND_DEV, FRONTEND_DEV, ARCHITECT]
 | Logo Marquee (40) | `SECTION_LOGO_MARQUEE` | `01`,`03`,`05` | 0..N | `BUILT` |
 | Feature (41) | `SECTION_FEATURE` | `01`,`03`,`05` | 0..N | `BUILT` |
 | FAQ (42) | `SECTION_FAQ` | `01`,`03`,`05` | 0..N | `BUILT` |
-| Flight Quote Modal (21) | — (не секция) | вне дерева | ровно 1 на документ | `BUILT` |
+| Flight Quote Modal (21) | — (not a section) | outside the tree | exactly 1 per document | `BUILT` |
 
-> **Отображаемое имя ≠ ключ.** В интерфейсе секция 36 называется **Story & Specs**; ключ
-> `SECTION_QUICK_FACTS` не менялся — переименование ключа задевает канонический реестр, имя файла
-> спеки и все уже сохранённые страницы. Правило общее: имена в этой таблице берутся из поля `name`
-> модуля, ключи — из `COMPONENT_KEYS`, и совпадать они не обязаны.
+> **A display name is not a key.** In the editor, section 36 is called **Story & Specs**; its
+> key `SECTION_QUICK_FACTS` is unchanged — renaming a key touches the canonical registry, the
+> spec's filename and every page already saved. The rule is general: names in this table come
+> from a module's `name` field, keys from `COMPONENT_KEYS`, and the two need not match.
 
 ---
 
-## 3. Связи
+## 3. Relationships
 
-| Связь | Механизм | Статус |
+| Relationship | Mechanism | Status |
 |---|---|---|
-| Page 1:N Section | массив `PageDoc.sections`, порядок = `slot_index`, затем `order_in_slot` | `BUILT` |
-| Section N:1 Page | секция не существует вне страницы; отдельного хранилища нет | `BUILT` |
+| Page 1:N Section | the `PageDoc.sections` array; order is `slot_index`, then `order_in_slot` | `BUILT` |
+| Section N:1 Page | a section does not exist outside a page; there is no separate store | `BUILT` |
 | Prices 1:N Price Row Item | `props.rows[]` | `BUILT` |
-| Multi-Card Grid 1:N Media Card Item | `props.cards[]`, активных `card_count`, остальные сохраняются | `BUILT` |
-| Feature 1:N Feature Item | `props.items[]`, активных `item_count`, остальные сохраняются | `BUILT` |
+| Multi-Card Grid 1:N Media Card Item | `props.cards[]`; `card_count` are active, the rest are retained | `BUILT` |
+| Feature 1:N Feature Item | `props.items[]`; `item_count` are active, the rest are retained | `BUILT` |
 | Logo Marquee 1:N Logo Item | `props.logos[]` | `BUILT` |
-| FAQ 1:N FAQ Item | `props.items[]`, до 20 | `BUILT` |
+| FAQ 1:N FAQ Item | `props.items[]`, up to 20 | `BUILT` |
 | Price Row → Modal | `<button data-row-quote data-destination data-cabin>` | `BUILT` |
-| CTA → Modal | делегированный клик по `a[href="#lead-modal"], [data-lead-open]` | `BUILT` |
-| Page → Modal (route defaults) | модалка не читает `default_origin` / `default_destination` страницы | `DEFECT` |
+| CTA → Modal | delegated click on `a[href="#lead-modal"], [data-lead-open]` | `BUILT` |
+| Page → Modal (route defaults) | the modal does not read the page's `default_origin` / `default_destination` | `DEFECT` |
 | Trust / Footer / Subscription / Contact → Global Store | `GLOBAL_CONTENT_ARCHETYPES`, `ctx.globals` | `BUILT` |
-| Модалка → CRM | запрос не отправляется, payload не собирается | `PLANNED` |
+| Modal → CRM | no request is sent and no payload is assembled | `PLANNED` |
 
 ---
 
-**Позиция секции** = `slot_index` + `order_in_slot` (`SYS-02 §3`). Якорям принадлежит по одному
-слоту, поэтому порядок `Hero(0) < Prices(2) < Trust(4) < Footer(6)` обеспечен структурно, а не
-арифметикой. Обязательность и неподвижность якоря **выводятся** из `ANCHOR_SLOT` и `archetype` —
-полей `position_type` и `is_mandatory` в документе нет (`10_ABSTRACT §4.3`).
+**A section's position** is `slot_index` + `order_in_slot` (`SYS-02 §3`). Each anchor owns a slot
+of its own, so the order `Hero(0) < Prices(2) < Trust(4) < Footer(6)` is guaranteed structurally
+rather than arithmetically. An anchor's mandatoriness and immobility are **derived** from
+`ANCHOR_SLOT` and `archetype` — there are no `position_type` or `is_mandatory` fields on the
+document (`10_ABSTRACT §4.3`).

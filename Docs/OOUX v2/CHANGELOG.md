@@ -1,282 +1,283 @@
 # CHANGELOG
 
-История изменений модели. **Спеки описывают систему, этот файл — как она к этому пришла.**
-Если правка требует обоснования «почему не как раньше» — обоснование живёт здесь, а не в
-таблице атрибутов.
+The history of the model. **The specs describe the system; this file describes how it got
+there.** If a change needs a "why not the way it was" justification, that justification lives
+here, not in an attribute table.
 
-Формат записи: что изменилось → почему прежний вариант был нерабочим.
-
----
-
-## Ревизия 2 — согласование модели
-
-Аудит выявил 24 противоречия между документами. Ниже — принятые решения.
-
-### Системный уровень
-
-**Добавлен `SYS-02-ENUMS` — канонический реестр.**
-`component_key` существовал в четырёх несовместимых написаниях (`'HERO'`, `'SECTION_FOOTER'`,
-`'STATIC_CONTACT'`, `SECTION_QUICK_FACTS`), регионы были определены дважды разными списками.
-Все ключи приведены к префиксу `SECTION_`.
-
-**Критично:** валидатор публикации проверял `hasComponent('FOOTER')`, тогда как футер объявлял
-`component_key: 'SECTION_FOOTER'`. Корректно собранная страница падала с `E004`.
-
-**Регионы:** списки в `20` (6 значений) и `50` (8 значений) расходились, и ни в одном не было
-Америк. Теперь один список из 10 значений в `SYS-02 §2`.
-
-**Позиционная модель: `order_index` → `slot_index` + `order_in_slot`.**
-Плоский `order_index` с якорями, прибитыми к 0/2/4/6, физически не мог выразить больше одной
-динамической секции между двумя якорями. При этом `slot_index` как поле не существовал вовсе,
-хотя `SYS-00 §3.2` предписывал его менять при переносе через якорь. У статиков дефолт
-`order_index` был буквально «Dynamic Slot Index» — номер слота в поле порядка.
-
-**Уровни валидации L0/L1/L2.**
-Одни документы блокировали «сохранение», другие «публикацию», и `meta_title` с
-`Required: Yes, Default: None` делал невозможным создание черновика. Теперь черновик сохраняется
-всегда, полнота контента проверяется на публикации, формат — на поле.
-
-### Лидогенерация
-
-**`first_name`/`last_name` → `full_name`, `passengers{adults,children,infants}` → `passengers.total`.**
-CRM-контракт требовал полей, которых форма физически не собирает: в Hero одно поле «Name\*» и
-один счётчик пассажиров 1–9.
-
-**`cabin_class` вынесен в отдельное поле строки цены.**
-Модалка заполняла enum `'Business' | 'First' | 'Premium Economy'` значением `label_1` —
-свободной строки, чей же собственный пример в спеке (`"Business Class"`) в этот enum не входит,
-а соседний (`"Nonstop"`) вообще не про класс.
-
-**`#quote-modal` → `#lead-modal`.** Первое написание не соответствовало ничему; CTA с ним никуда
-не вели.
-
-**Добавлены consent и атрибуция.** Форма собирает имя, email и телефон, в том числе в
-юрисдикциях GDPR, и не имела ни чекбокса согласия, ни ссылки на политику. В телеметрии не было
-`utm_*`, `gclid`, `referrer`, `session_id` — базовой отчётности лидогенерации.
-
-**Создан `21_OBJECT_FLIGHT_QUOTE_MODAL`.** Ключевой объект воронки существовал только как
-функция гидрации; поля модалки не были описаны нигде, при том что спека утверждала, что обе
-формы идентичны.
-
-### Секции
-
-**Hero.** Дефолт `cta_button_color` был `rgba(0,0,0,0.88)` — байт в байт фон тёмной темы:
-из коробки чёрная кнопка на чёрном фоне. Заменён на бронзовый + добавлен контроль контраста.
-Звёздочка к цене дорисовывалась жёстко, но поля сноски не существовало — теперь `*` появляется
-только вместе с `price_footnote`. У таймера не было ни таймзоны, ни поведения после нуля.
-Не было правила, что происходит с цветами при смене темы.
-
-**Prices.** `title_font_weight: ['Bold','Italic']` смешивал жирность и начертание на одной оси.
-Разделитель массового импорта `/` встречался внутри контента (дефолт колонки —
-`"Published / Our Fare"`) без экранирования; заменён на `|`. Конвенция «пустое поле = дефис»
-делала значение `-` непредставимым. Не было режима append/replace, обработки битых строк,
-контроля лимита в 30 строк. Вкладки регионов вырождались в одинокий `[All]`, а поведение
-`Global`-строк внутри региональной вкладки было не определено. Строка цены была кликабельным
-`div` без клавиатурного доступа.
-
-**Trust.** §4.2 содержал инструкции по миграции («DEPRECATED», «PERMANENTLY DELETED», «применить
-padding-токен из Figma») вместо описания объекта; вынесено в этот файл (см. ниже). Режим
-`Compact` не имел структурного описания вообще. Глобальный стор был единственным без схемы.
-
-**Quick Facts.** Частично заполненная карточка (заголовок есть, параграф пуст) молча
-выбрасывалась из вёрстки — единственное место в системе, где потеря контента не была ошибкой
-валидации. `layout_direction: LTR|RTL` заменён на `media_side`.
-
-**Multi-Card Grid.** «Длина массива строго равна `card_count`» противоречило правилу о
-сохранении данных при уменьшении счётчика. Мобильная раскладка была описана как «стек или
-карусель» — два разных компонента в одной формулировке.
-
-**Text & Media.** Один и тот же контрол назывался `media_position` здесь, `alignment` в
-`03-subtype-schemas` и `layout_direction` в базовом классе. Оставлен `media_side`.
-
-**Logo Marquee.** Бесконечная анимация без исключения для `prefers-reduced-motion` —
-вестибулярный триггер. Поле `speed` не было описано.
-
-**Feature.** См. отдельный раздел ниже.
-
-**Landing Page.** Смена slug у опубликованной страницы молча уничтожала SEO — добавлен
-обязательный 301. Unpublish отдавал «404 или редирект» (нерешённый выбор) — зафиксирован `410`.
-Дублирование безусловно добавляло `-copy`, что при повторе давало коллизию и цепочки
-`-copy-copy`.
-
-### Базовые классы
-
-**`layout_direction` удалён.** Был обязателен для всех динамических секций, осмыслен для двух,
-дублировал `media_position` у Text & Media, а токен `RTL` конфликтует с направлением письма в
-продукте, который таргетируется на Ближний Восток.
-
-**Переключение варианта стало неразрушающим.** Прежнее правило перезаписывало все поля пресетом
-целевого варианта. Highlighted и Standard различаются только размером иконки — админ,
-подправивший визуальный вес секции, терял весь её текст. При этом Multi-Card Grid для
-эквивалентного действия уже обещал сохранение данных.
-
-**Toggle Visibility.** Базовый класс разрешал переключение «для всех секций», четыре наследника
-объявляли его заблокированным.
-
-**Контракт `alt`.** Ни одного alt-поля не существовало ни у одного изображения — ни у
-`og_image`, ни у фона Hero, ни у карточек. Введён централизованно в `SYS-02 §6`.
-
-**`anchor_id`.** Секции не имели идентификатора для внутристраничных ссылок, при том что CTA
-декларировали поддержку относительных путей.
+Entry format: what changed → why the previous version did not work.
 
 ---
 
-## Ревизия 3 — читаемость
+## Revision 2 — reconciling the model
 
-**Создан этот файл.** В ревизии 2 обоснования правок были вписаны прямо в таблицы атрибутов
-(26 вставок вида «*Renamed from…*», «*Previously…*»). Для чтения дифа это было полезно, для
-чтения спеки — шум: документ начинал объяснять свою историю вместо описания системы. Ровно то,
-за что в ревизии 2 был раскритикован Trust §4.2.
+An audit found 24 contradictions between the documents. The decisions taken are below.
 
-**Спеки отвязаны от кода.** Секции «IMPLEMENTATION STATUS» и ссылки на `src/` убраны из
-объектных документов. Документация теперь самодостаточна и описывает целевую систему; сверка с
-текущей реализацией живёт в одном месте — `BACKLOG.md`. Статус `APPROVED_SPEC_AHEAD` упразднён.
+### System level
 
-**Feature Section схлопнут.** Три варианта (`Highlighted` / `Standard` / `Compact`) описывались
-тремя схемами, тремя пресетами и тремя ветками валидации, различаясь ровно тремя параметрами:
-размер иконки, число элементов, наличие параграфа. Теперь это один объект с параметрами и
-таблицей из трёх именованных пресетов. Документ сократился примерно вдвое.
+**`SYS-02-ENUMS` added — the canonical registry.**
+`component_key` existed in four incompatible spellings (`'HERO'`, `'SECTION_FOOTER'`,
+`'STATIC_CONTACT'`, `SECTION_QUICK_FACTS`), and regions were defined twice with different lists.
+All keys were brought to the `SECTION_` prefix.
 
-**Убрана копипаста из секций.** Таблицы «Inherited Dynamic Styling Overrides» и «Lifecycle &
-Admin CTAs» повторялись почти дословно в шести документах. Заменены ссылкой на базовый класс
-плюс строка с дефолтами конкретной секции.
+**Critical:** the publish validator checked `hasComponent('FOOTER')` while the footer declared
+`component_key: 'SECTION_FOOTER'`. A correctly assembled page failed with `E004`.
 
-**`03-subtype-schemas.md` удалён,** его таблица селекторов перенесена в `02-system-taxonomy.md`.
-Файл существовал как сводка, дважды разошёлся с первоисточниками (карточки Quick Facts, поле
-Card 4 в Standard, имя контрола в Text & Media) и был третьим источником истины там, где нужен
-один.
+**Regions:** the lists in `20` (6 values) and `50` (8 values) disagreed, and neither contained
+the Americas. There is now one list of 10 values in `SYS-02 §2`.
+
+**Positional model: `order_index` → `slot_index` + `order_in_slot`.**
+A flat `order_index` with anchors pinned to 0/2/4/6 physically cannot express more than one
+dynamic section between two anchors. `slot_index` did not exist as a field at all, even though
+`SYS-00 §3.2` prescribed changing it when moving a section across an anchor. For static modules
+the default `order_index` was literally "Dynamic Slot Index" — a slot number in an order field.
+
+**Validation levels L0 / L1 / L2.**
+Some documents blocked "saving" and others "publishing", and `meta_title` with
+`Required: Yes, Default: None` made creating a draft impossible. A draft now always saves,
+content completeness is checked at publish, and format is checked per field.
+
+### Lead generation
+
+**`first_name`/`last_name` → `full_name`, `passengers{adults,children,infants}` →
+`passengers.total`.** The CRM contract required fields the form does not physically collect: the
+Hero has one "Name\*" field and one passenger counter from 1 to 9.
+
+**`cabin_class` became its own field on a price row.** The modal was populating the enum
+`'Business' | 'First' | 'Premium Economy'` from `label_1` — a free-text field whose own example
+in the spec (`"Business Class"`) is not a member of that enum, and whose neighbour (`"Nonstop"`)
+is not about cabin at all.
+
+**`#quote-modal` → `#lead-modal`.** The first spelling corresponded to nothing; CTAs using it led
+nowhere.
+
+**Consent and attribution added.** The form collects a name, an email address and a phone number,
+including in GDPR jurisdictions, and had neither a consent checkbox nor a link to a policy. The
+telemetry carried no `utm_*`, `gclid`, `referrer` or `session_id` — the basics of lead reporting.
+
+**`21_OBJECT_FLIGHT_QUOTE_MODAL` created.** The key object of the funnel existed only as a
+hydration function; the modal's fields were described nowhere, while the spec asserted that both
+forms are identical.
+
+### Sections
+
+**Hero.** The `cta_button_color` default was `rgba(0,0,0,0.88)` — byte for byte the dark theme's
+background: a black button on a black ground out of the box. Replaced with bronze, and a contrast
+check was added. The asterisk beside the price was drawn unconditionally while no footnote field
+existed — `*` now appears only together with `price_footnote`. The timer had neither a timezone
+nor a defined behaviour past zero. There was no rule for what happens to colours when the theme
+changes.
+
+**Prices.** `title_font_weight: ['Bold','Italic']` mixed weight and style on one axis. The bulk
+import separator `/` occurs inside the content itself (the default column heading is
+`"Published / Our Fare"`) with no escaping; replaced with `|`. The convention "an empty field is
+a dash" made the value `-` unrepresentable. There was no append/replace mode, no handling of
+malformed lines, and no enforcement of the 30-row limit. Region tabs degenerated into a lone
+`[All]`, and the behaviour of `Global` rows inside a regional tab was undefined. A price row was
+a clickable `div` with no keyboard access.
+
+**Trust.** §4.2 contained migration instructions ("DEPRECATED", "PERMANENTLY DELETED", "apply the
+padding token from Figma") instead of describing the object; moved into this file (see below).
+The `Compact` mode had no structural description at all. The global store was the only one
+without a schema.
+
+**Quick Facts.** A partially filled card (title present, paragraph empty) was silently dropped
+from the layout — the only place in the system where losing content was not a validation error.
+`layout_direction: LTR|RTL` was replaced with `media_side`.
+
+**Multi-Card Grid.** "The array length is strictly equal to `card_count`" contradicted the rule
+about retaining data when the count is reduced. The mobile layout was described as "a stack or a
+carousel" — two different components in one phrase.
+
+**Text & Media.** The same control was called `media_position` here, `alignment` in
+`03-subtype-schemas` and `layout_direction` in the base class. `media_side` was kept.
+
+**Logo Marquee.** An infinite animation with no exception for `prefers-reduced-motion` is a
+vestibular trigger. The `speed` field was not described.
+
+**Feature.** See the separate section below.
+
+**Landing Page.** Changing the slug of a published page silently destroyed its SEO — a mandatory
+301 was added. Unpublish returned "404 or a redirect" (an unresolved choice) — fixed at `410`.
+Duplication unconditionally appended `-copy`, which on repetition produced a collision and chains
+of `-copy-copy`.
+
+### Base classes
+
+**`layout_direction` removed.** It was mandatory for every dynamic section, meaningful for two,
+duplicated `media_position` on Text & Media, and its `RTL` token conflicts with writing direction
+in a product targeting the Middle East.
+
+**Switching a variant became non-destructive.** The previous rule overwrote every field with the
+target variant's preset. Highlighted and Standard differ only in icon size — an administrator
+adjusting a section's visual weight lost all of its text. Meanwhile Multi-Card Grid already
+promised data retention for the equivalent action.
+
+**Toggle Visibility.** The base class permitted toggling "for all sections" while four
+descendants declared it blocked.
+
+**The `alt` contract.** No alt field existed for any image — not for `og_image`, not for the Hero
+background, not for the cards. Introduced centrally in `SYS-02 §6`.
+
+**`anchor_id`.** Sections had no identifier for in-page links, while CTAs declared support for
+relative paths.
 
 ---
 
-## Приложение: миграция Trust v2.0.0 (историческое)
+## Revision 3 — readability
 
-Из `32_OBJECT_SECTION_TRUST.md §4.2`, где это описание было ошибочно оформлено как спецификация:
+**This file was created.** In revision 2 the justifications for changes were written directly
+into the attribute tables (26 insertions of the form "*Renamed from…*", "*Previously…*"). Useful
+for reading a diff, noise for reading a spec: the document began explaining its own history
+instead of describing the system. Exactly what Trust §4.2 was criticised for in revision 2.
 
-* Внешний контейнер Trustpilot, фоновая плашка и вложенные рамки удалены.
-* Карточки `24/7 Support`, `SSL Secured`, `PCI DSS Compliant` удалены из разметки.
-* Отступы блока с отзывом знаменитости приведены к брендовому padding-токену.
+**The specs were decoupled from the code.** The "IMPLEMENTATION STATUS" sections and the
+references to `src/` were removed from the object documents. The documentation became
+self-contained and described the target system; reconciliation with the current implementation
+lived in one place, `BACKLOG.md`. The `APPROVED_SPEC_AHEAD` status was abolished.
 
-⚠ Связанное наблюдение, не закрытое до сих пор: «24/7» продолжает утверждаться
-`operational_notice` в Contact и пресетом Feature `Compact`; аккредитации показываются трижды —
-бейджами в Hero, печатями в футере и пресетом Feature `Standard`. Это контентное решение,
-вынесено в `BACKLOG.md`.
+**The Feature section was collapsed.** Three variants (`Highlighted` / `Standard` / `Compact`)
+were described by three schemas, three presets and three validation branches, differing in
+exactly three parameters: icon size, item count, presence of a paragraph. It is now one object
+with parameters and a table of three named presets. The document shrank by roughly half.
 
----
+**Copy-paste removed from the sections.** The tables "Inherited Dynamic Styling Overrides" and
+"Lifecycle & Admin CTAs" were repeated almost verbatim in six documents. Replaced with a
+reference to the base class plus one line of that section's own defaults.
 
-## Ревизия 4 — правки, найденные при реализации
-
-**`SYS-00 §3.1`, перенос секции через якорь: направления были перепутаны.** Предписывалось
-`order_in_slot = 0` при движении вверх и `len(slot)` при движении вниз. Это обратный порядок:
-секция, уходящая вверх, вставала бы в начало верхнего слота, то есть перепрыгивала бы его
-целиком вместо шага на одну позицию. Правильно наоборот — вверх в конец слота, вниз в начало.
-Обнаружено при написании `src/model/slots.js`.
-
-**`SYS-00 §5` и `SYS-02 §4` расходились по условию публикации.** Первый требовал L0+L1, второй
-L0+L1+L2. Приведено к канону SYS-02: проверяются все три уровня. На практике L2 к моменту
-публикации уже пуст, но импортированный или отредактированный вручную документ иначе проходил
-бы мимо проверки формата.
-
-**`E005` и `E008` пересекались на якорях.** Якорь в чужом слоте нарушает оба правила сразу и
-получал два кода на одну ошибку. Якори выведены из-под `E008`: их размещение описывает `E005`,
-а `E008` остаётся про модули в запрещённом слоте.
+**`03-subtype-schemas.md` deleted,** its selector table moved into `02-system-taxonomy.md`. The
+file existed as a summary, drifted from its sources twice (Quick Facts cards, the Card 4 field in
+Standard, the control name in Text & Media) and was a third source of truth where one was needed.
 
 ---
 
-## Ревизия 5 — Feature: пресет вместо независимых параметров
+## Appendix: the Trust v2.0.0 migration (historical)
 
-**`icon_size` и `has_paragraph` перестали быть независимыми полями.** Ревизия 3 схлопнула
-Feature в один объект с тремя параметрами, представив Highlighted/Standard/Compact как
-сокращения для их комбинаций — модель, которая на бумаге читалась чище. На практике же
-оказалось, что `icon_size` и `has_paragraph` никогда не меняются сами по себе: 64px принадлежит
-только Highlighted, а отсутствие параграфа — не переключатель поверх Compact, а то, чем Compact
-и является. Независимые контролы для них в инспекторе позволяли собрать комбинации, которых не
-существует ни в одном дизайне, и маскировали то, что три пресета — это три разных лейаута, а не
-один лейаут с двумя тумблерами. Оба параметра остались во внутреннем представлении (`props`), но
-поле для их выбора убрано из инспектора — они выставляются только через `_preset`.
-`item_count` остался независимым полем: это единственное измерение, которое действительно
-меняется отдельно от пресета.
+From `32_OBJECT_SECTION_TRUST.md §4.2`, where this description was mistakenly formatted as a
+specification:
 
-**Presets получили собственные лейауты, а не только размер иконки.** Referenced sketches
-показали, что Standard — не Highlighted с иконкой поменьше: это горизонтальная строка (иконка
-слева, заголовок+параграф справа, выравнивание по левому краю), в то время как Highlighted —
-вертикальный центрированный стек. Compact дополнительно получил вертикальные разделители между
-элементами. `41_OBJECT_SECTION_FEATURE.md §4.3` и `§6.4` обновлены соответственно.
+* The outer Trustpilot container, its background plate and nested borders were removed.
+* The `24/7 Support`, `SSL Secured` and `PCI DSS Compliant` cards were removed from the markup.
+* The celebrity review block's padding was brought onto the brand padding token.
+
+⚠ A related observation, still open: "24/7" continues to be asserted by `operational_notice` in
+Contact and by the Feature `Compact` preset; accreditations are shown three times — as badges in
+the Hero, as seals in the footer, and by the Feature `Standard` preset. This is a content
+decision, carried into `ROADMAP.md`.
 
 ---
 
-## Ревизия 6 — Text & Media: колонка заголовка не зависит от наличия фото
+## Revision 4 — corrections found during implementation
 
-**Режим `No Photo` больше не схлопывается в одну колонку.** Раньше при отсутствии фото секция
-превращалась в один блок на всю ширину (clamp 780px) — единственный режим, ломающий
-двухколоночный ритм, который держат `1 Photo` и `2 Photos`. Теперь заголовок всегда занимает
-свою колонку в одиночку (сверху, с пустым пространством под ним — это ожидаемо, а не баг
-вёрстки), а `subtitle` + `paragraph` + CTA переезжают во вторую колонку, туда, где было бы
-изображение. `media_side` по-прежнему скрыт в этом режиме — позиционировать нечего.
+**`SYS-00 §3.1`, moving a section across an anchor: the directions were reversed.** It prescribed
+`order_in_slot = 0` when moving up and `len(slot)` when moving down. That is backwards: a section
+moving up would land at the start of the slot above, jumping it entirely instead of stepping one
+position. Correct is the opposite — up to the end of the slot, down to the start. Found while
+writing `src/model/slots.js`.
 
-**Добавлено поле `subtitle`.** Опциональная жирная строка между заголовком и параграфом —
-раньше в схеме была только пара «заголовок + параграф», без промежуточного уровня. Скрывается,
-когда пусто.
+**`SYS-00 §5` and `SYS-02 §4` disagreed on the publish condition.** The first required L0+L1, the
+second L0+L1+L2. Brought to the SYS-02 canon: all three levels are checked. In practice L2 is
+already empty by publish time, but an imported or hand-edited document would otherwise slip past
+the format check.
 
----
-
-## Ревизия 7 — Text & Media: Subtitle убран
-
-**Поле `subtitle`, добавленное в ревизии 6, отменено.** После примерки на реальном макете
-подзаголовок между заголовком и параграфом оказался лишним элементом — макет обошёлся без
-него. Остальная часть ревизии 6 (двухколоночная раскладка в `No Photo`, где заголовок держит
-собственную колонку, а параграф+CTA переезжают во вторую) остаётся в силе, это отдельное и
-самостоятельно верное решение.
-
+**`E005` and `E008` overlapped on anchors.** An anchor in the wrong slot violates both rules at
+once and received two codes for one error. Anchors were taken out from under `E008`: their
+placement is described by `E005`, and `E008` remains about modules in a forbidden slot.
 
 ---
 
-## Ревизия 8 — сверка с кодом и пересборка модели (v2)
+## Revision 5 — Feature: a preset instead of independent parameters
 
-**Что произошло.** Сверка всех 28 документов v1 против `src/` нашла 148 расхождений: 33
-высокой критичности, 63 средней, 52 низкой. Разбор по тому, что с ними делать, а не по
-severity: 7 багов (код написан и не работает), 44 непостроенных пункта, 83 решения,
-принятых в коде и не отражённых в спеке, 14 вещей, выросших в коде и не упомянутых нигде.
+**`icon_size` and `has_paragraph` stopped being independent fields.** Revision 3 collapsed Feature
+into one object with three parameters, presenting Highlighted/Standard/Compact as shorthand for
+their combinations — a model that read more cleanly on paper. In practice `icon_size` and
+`has_paragraph` never change on their own: 64px belongs only to Highlighted, and the absence of a
+paragraph is not a switch layered on top of Compact but what Compact *is*. Independent controls
+for them let an inspector assemble combinations that exist in no design, and masked the fact that
+the three presets are three different layouts rather than one layout with two toggles. Both
+parameters remain in the internal representation (`props`), but the control for choosing them was
+removed from the inspector — they are set only through `_preset`. `item_count` stayed an
+independent field: it is the one dimension that genuinely varies separately from the preset.
 
-**Почему v1 разошёлся.** Ревизия 3 отвязала спеки от кода: документация описывает целевую
-систему, сверка живёт в одном месте — `BACKLOG.md`. Принцип верный, исполнение — нет. Одна
-таблица на 28 документов обновляется ровно до тех пор, пока кто-то о ней помнит. К моменту
-сверки она ссылалась на три файла, которых в проекте не существует (`src/store.js`,
-`src/schema/common.js`, `src/presets/templates.js`), и числила нереализованными четыре вещи,
-которые работали. Документ выглядел авторитетным и таковым не был.
+**Presets got their own layouts, not just an icon size.** The referenced sketches showed that
+Standard is not Highlighted with a smaller icon: it is a horizontal row (icon left, title and
+paragraph right, left-aligned), while Highlighted is a vertical centred stack. Compact
+additionally received vertical dividers between items. `41_OBJECT_SECTION_FEATURE.md §4.3` and
+`§6.4` were updated accordingly.
 
-Показательнее всего строка «FAQ-секция. Нет ни в спеке, ни в коде» — написанная в то время,
-когда `src/sections/faq.js` уже был зарегистрирован и отдавался пользователю.
+---
 
-**Что изменено в v2.**
+## Revision 6 — Text & Media: the title column does not depend on having a photo
 
-Спеки описывают систему как она есть. Каждый атрибут и каждое правило несёт маркер
-`BUILT` / `PLANNED` / `DEFECT`. Расхождение больше не может быть незаметным: оно либо
-помечено, либо его нет. Маркера «частично» намеренно не существует — именно компромисс между
-«работает» и «не работает» и позволял v1 расходиться с кодом, оставаясь формально верным.
+**The `No Photo` mode no longer collapses into a single column.** Previously, with no photo the
+section became one full-width block (clamped at 780px) — the only mode breaking the two-column
+rhythm that `1 Photo` and `2 Photos` hold. The title now always occupies a column of its own (at
+the top, with empty space beneath it — which is expected, not a layout bug), and `subtitle` +
+`paragraph` + CTA move into the second column, where the image would have been. `media_side`
+remains hidden in this mode — there is nothing to position.
 
-Сводная таблица расхождений упразднена. Её работу делают маркеры внутри спек — там, где
-расхождение возникает, а не в отдельном файле, который забывают открыть. Вместо неё три
-файла учёта с непересекающимися ролями: `ROADMAP.md` (не делали), `DEFECTS.md` (делали, не
-работает), `CHANGELOG.md` (почему).
+**A `subtitle` field was added.** An optional bold line between the title and the paragraph — the
+schema previously had only the pair "title + paragraph", with no intermediate level. Hidden when
+empty.
 
-**Добавлен `42_OBJECT_SECTION_FAQ`.** Секция существовала в коде, была зарегистрирована,
-вставлялась на страницу и не имела документа. Guard реестра её не поймал и поймать не мог:
-он сверяет `_registry.js` с `enums.js` — два файла, которые правят одной рукой, — и спеку не
-читает. Тест, читающий таблицу ключей из `SYS-02 §1`, внесён в `ROADMAP.md`.
+---
 
-**Решения, зафиксированные задним числом.** Приняты в коде, не были описаны нигде:
-alt-текст перестал блокировать публикацию (`SYS-02 §6`); переопределения типографики
-заголовка Prices убраны в пользу общего Heading-компонента; Story & Specs потерял контролы
-размера и выравнивания заголовка; пресеты Feature переименованы в `S` / `M` / `L`; CTA везде
-стал вложенным `cta: { on, label, href }` вместо трёх плоских полей; контейнерная спека
-(1280px, отступы 80px) применена к большинству секций.
+## Revision 7 — Text & Media: Subtitle removed
 
-**Один баг починен по ходу пересборки.** Подавление разделителей в FAQ считалось от
-десктопного числа колонок, а корректирующие правила стояли в медиазапросе `≤767px`, тогда как
-сетка схлопывается на `≤1023px`. В полосе 768–1023 двухколоночный FAQ терял разделитель
-посреди списка. Найдено при написании `42` — то есть написание спеки по коду сработало как
-ревью кода, что и было одной из целей ревизии.
+**The `subtitle` field added in revision 6 was reverted.** Tried against a real mockup, a
+subheading between the title and the paragraph turned out to be a superfluous element — the
+mockup did without it. The rest of revision 6 (the two-column layout in `No Photo`, where the
+title holds a column of its own and the paragraph and CTA move into the second) stands; that is a
+separate and independently correct decision.
 
-**Чего v2 не делает.** Не чинит остальные восемь дефектов и не реализует ни одного пункта
-`ROADMAP.md`. Это документация, а не спринт. Её работа — сделать так, чтобы список того и
-другого существовал и был точным.
+---
+
+## Revision 8 — reconciliation with the code, and the rebuild of the model (v2)
+
+**What happened.** A reconciliation of all 28 v1 documents against `src/` found 148 divergences:
+33 high severity, 63 medium, 52 low. Sorted by what to do about them rather than by severity:
+7 bugs (code written and not working), 44 unbuilt items, 83 decisions taken in the code and not
+reflected in the spec, 14 things that grew in the code and are mentioned nowhere.
+
+**Why v1 drifted.** Revision 3 decoupled the specs from the code: the documentation describes the
+target system, reconciliation lives in one place — `BACKLOG.md`. The principle was right, the
+execution was not. One table serving 28 documents stays current exactly as long as someone
+remembers it. By the time of the reconciliation it cited three files that do not exist in the
+project (`src/store.js`, `src/schema/common.js`, `src/presets/templates.js`) and listed four
+implemented things as unbuilt. The document looked authoritative and was not.
+
+The clearest symptom is the line "FAQ section. In neither the spec nor the code" — written at a
+time when `src/sections/faq.js` was already registered and shipping to users.
+
+**What changed in v2.**
+
+The specs describe the system as it is. Every attribute and every rule carries a
+`BUILT` / `PLANNED` / `DEFECT` marker. A divergence can no longer be quiet: it is either marked
+or it does not exist. There is deliberately no "partial" marker — the compromise between "works"
+and "does not work" is exactly what let v1 drift from the code while remaining formally true.
+
+The summary divergence table is abolished. Its job is done by the markers inside the specs — at
+the point where a divergence arises, rather than in a separate file nobody remembers to open. In
+its place, three registers with non-overlapping roles: `ROADMAP.md` (not done), `DEFECTS.md`
+(done, not working), `CHANGELOG.md` (why).
+
+**`42_OBJECT_SECTION_FAQ` added.** The section existed in the code, was registered, could be
+inserted into a page, and had no document. The registry guard did not catch it and could not: it
+compares `_registry.js` against `enums.js` — two files edited by the same hand — and does not
+read the spec. A test that reads the key table out of `SYS-02 §1` is an entry in `ROADMAP.md`.
+
+**Decisions recorded after the fact.** Taken in the code and described nowhere: alt text stopped
+blocking publication (`SYS-02 §6`); the Prices heading's typography overrides were removed in
+favour of the shared heading component; Story & Specs lost its heading size and alignment
+controls; the Feature presets were renamed to `S` / `M` / `L`; the CTA became a nested
+`cta: { on, label, href }` everywhere instead of three flat fields; the container spec
+(1280px, 80px gutters) was applied to most sections.
+
+**One bug fixed during the rebuild.** FAQ divider suppression was computed from the desktop
+column count while the corrective rules sat in the `≤767px` media query, although the grid
+collapses at `≤1023px`. In the 768–1023 band a two-column FAQ lost a divider mid-list. Found
+while writing `42` — that is, writing a spec against the code worked as a code review, which was
+one of the goals of this revision.
+
+**What v2 does not do.** It does not fix the other eight defects and implements no item from
+`ROADMAP.md`. This is documentation, not a sprint. Its job is to make both lists exist and be
+accurate.

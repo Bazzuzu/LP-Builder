@@ -1,151 +1,155 @@
-# DEFECTS — описано, реализовано, не работает
+# DEFECTS — described, implemented, not working
 
-Здесь живут все пункты, помеченные в спеках маркером `DEFECT`. Это **баги, а не расхождения
-модели**: поведение описано, код под него написан, но не срабатывает.
+Every item marked `DEFECT` in the specs lives here. These are **bugs, not model divergences**:
+the behaviour is described, code was written for it, and it does not fire.
 
-Отличие от `ROADMAP.md`: там то, что сознательно не делали. Здесь то, что делали и что
-не работает. Пункт отсюда закрывается правкой кода, пункт оттуда — решением делать.
+How this differs from `ROADMAP.md`: that file holds what was deliberately not done. This one
+holds what was done and does not work. An item here is closed by fixing code; an item there is
+closed by deciding to build it.
 
-Источник: сверка `Docs/OOUX` v1 против `src/` от 11.09.2026. Пять пунктов перепроверены
-вручную построчно, три — по отчётам сверки со ссылками на строки.
-
----
-
-## D-01 · Форма Hero не отправляется · Hero §4.6
-
-Форма помечена `data-hero-lead` (`src/sections/hero.js`). Рантайм подписывается только на
-`[data-lead-form]` (`src/render/runtime.js:61`) — этот атрибут есть исключительно у модалки
-(`src/render/page.js:118`). Во всём `src/` `data-hero-lead` не читает никто.
-
-**Что происходит:** нажатие кнопки выполняет нативный submit и перезагружает страницу. Ни
-`preventDefault`, ни сообщения об успехе, ни сохранения данных. Лид теряется полностью.
-
-**Проверено вручную.** Самый дорогой пункт списка: это главная точка конверсии лендинга.
+Source: the reconciliation of `Docs/OOUX` v1 against `src/`, 11 September 2026. Five items were
+re-verified by hand, line by line; the rest come from the reconciliation reports, with line
+references.
 
 ---
 
-## D-02 · Модалка сообщает об успехе и выбрасывает лид · SYS-99 §5, 21 §5
+## D-01 · The Hero form does not submit · Hero §4.6
 
-Обработчик отправки модалки (`src/render/runtime.js:61-67`) целиком состоит из: отменить
-событие, написать «Thank you — a travel specialist will contact you shortly», спрятать форму.
-Ни `fetch`, ни `sendBeacon`, ни записи в хранилище — во всём рантайме нет ни одного сетевого
-вызова.
+The form is tagged `data-hero-lead` (`src/sections/hero.js`). The runtime only ever binds
+`[data-lead-form]` (`src/render/runtime.js:61`), an attribute that exists solely on the modal
+(`src/render/page.js:118`). Nothing in `src/` reads `data-hero-lead`.
 
-**Что происходит:** посетитель заполняет имя, email и телефон, получает подтверждение, что с
-ним свяжется специалист, и не связывается никто. Данные не сохранены нигде.
+**What happens:** pressing the button performs a native form submission, which reloads the page.
+No `preventDefault`, no confirmation, nothing stored. The lead is lost entirely. The form's
+inputs additionally carry no `name` attributes, so even a bound handler would serialise nothing.
 
-Формально «пайплайн лидов — фаза 5», и его отсутствие — пункт `ROADMAP.md`, а не дефект.
-Дефект здесь другой: **ложное подтверждение**. Честное поведение прототипа — не показывать
-сообщение об успехе. Пока CRM нет, сообщение должно говорить, что это демонстрация, либо
-отправки не должно быть вовсе.
-
-Приоритет выше, чем у D-01: неотправляющаяся форма Hero теряет лид молча, а эта — обещает
-посетителю обратный звонок, которого не будет.
+**Verified by hand.** The most expensive item on the list: this is the landing page's primary
+conversion point.
 
 ---
 
-## D-03 · Мобильный оверлей фона не читается · Hero §4.2
+## D-02 · The modal reports success and discards the lead · SYS-99 §5, 21 §5
 
-`mobile_overlay_color` и `mobile_overlay_opacity` объявлены в полях, имеют дефолты и
-редактируются в панели. Рендер собирает единственный `.hero-ov` из десктопной пары
-(`src/sections/hero.js:348-351`); мобильные значения не используются нигде.
+The modal's submit handler (`src/render/runtime.js:61-67`) consists entirely of: cancel the
+event, write "Thank you — a travel specialist will contact you shortly", hide the form. No
+`fetch`, no `sendBeacon`, no write to storage — there is not a single network call anywhere in
+the runtime.
 
-**Что происходит:** админ меняет затемнение мобильного фона и не видит никакого эффекта —
-ни в превью, ни в экспорте.
+**What happens:** a visitor fills in their name, email and phone number, is told a specialist
+will contact them, and nobody does. The data is stored nowhere.
 
-**Проверено вручную.**
+Formally the lead pipeline is "phase 5", and its absence is a `ROADMAP.md` item rather than a
+defect. The defect is a different thing: **the false confirmation**. The honest behaviour for a
+prototype is not to claim success. Until there is a CRM, the message should say this is a
+demonstration, or there should be no submission at all.
 
----
-
-## D-04 · Строка цены, добавленная вручную, не получает `row_id` · 50 §4.1
-
-`newRow()` генерирует `row_id` (`src/sections/prices.js:285`), поэтому засеянные и
-импортированные через bulk-import строки его имеют. Кнопка «+ Add row» в репитере собирает
-пустой объект из ключей **объявленных полей** (`src/ui/fields.js:374`), а `row_id` среди них
-нет — он не поле редактора, а служебный идентификатор.
-
-**Что происходит:** часть строк в одном документе имеет идентификатор, часть нет. Расхождение
-молчаливое: `src/ui/fields.js` уже содержит специальный случай для `row_id`, который это
-маскирует.
-
-**Вторая грань той же проблемы:** «Duplicate» в репитере делает `structuredClone` строки
-вместе с `row_id`. То есть один документ может содержать две строки с одинаковым
-идентификатором — и это хуже, чем строка без него, потому что выглядит валидно.
-
-**Проверено вручную.**
+Higher priority than D-01: the unbound Hero form loses a lead silently, while this one promises
+a visitor a callback that will not come.
 
 ---
 
-## D-05 · Heading size и Alignment в Trust ничего не делают · Trust §4.1
+## D-03 · The mobile background overlay is never read · Hero §4.2
 
-Панель предлагает оба контрола (через общий `headingFields`), значения сохраняются в props.
-Заголовок рендерится как `.tr-title` с зашитым `font-size: var(--h-m)`
-(`src/sections/trust.js:63,143`); класс выравнивания на оболочке секции до него не доходит.
+`mobile_overlay_color` and `mobile_overlay_opacity` are declared as fields, have defaults and are
+editable in the panel. The renderer builds a single `.hero-ov` from the desktop pair
+(`src/sections/hero.js:348-351`); the mobile values are used nowhere.
 
-**Что происходит:** два контрола в интерфейсе без эффекта. Та же мёртвая пара была в
-Story & Specs, где её убрали 11.09.2026 — там это оказалось случайно правильным решением.
+**What happens:** an author changes the mobile background scrim and sees no effect — not in the
+preview and not in the export.
 
-**Проверено вручную.** Чинить можно с двух сторон: либо перевести `.tr-title` на общий
-Heading-компонент, либо убрать контролы, как в Story & Specs. Второе дешевле и честнее:
-Trust — dual-role секция, её типографика задана дизайном, а не автором страницы.
+**Verified by hand.**
 
 ---
 
-## D-06 · Класс обслуживания собирается и выбрасывается · SYS-99 §2, 21 §4
+## D-04 · A manually added price row receives no `row_id` · 50 §4.1
 
-Prices честно отдаёт `data-cabin` на каждой строке (`src/sections/prices.js:262`). Рантайм
-читает его и пишет в `[data-lead-cabin]` внутри модалки (`src/render/runtime.js:17-18`).
-Элемента с таким атрибутом в разметке модалки нет (`src/render/page.js:113-127`).
+`newRow()` generates a `row_id` (`src/sections/prices.js:285`), so seeded and bulk-imported rows
+have one. The repeater's "+ Add row" button builds its blank from the keys of the **declared
+fields** (`src/ui/fields.js:374`), and `row_id` is not among them — it is an internal identifier,
+not an editor field.
 
-**Что происходит:** клик по строке «Tokyo (HND), First Class» открывает модалку, в которой
-класс не выбран и не показан. Вся цепочка передачи написана и обрывается на последнем шаге.
+**What happens:** some rows in a document have an identifier and some do not. The divergence is
+silent: `src/ui/fields.js` already special-cases `row_id`, which masks it.
 
----
+**A second facet of the same problem:** "Duplicate" in the repeater `structuredClone`s the row
+*including* its `row_id`. One document can therefore hold two rows claiming to be the same one —
+worse than a row without an id, because it looks valid.
 
-## D-07 · Порядок стека Text & Media на мобильном не соответствует спеке · 39 §6.4
-
-Спека требует `Title → Media → Paragraph → CTA`. Разметка выдаёт `copy` (заголовок, параграф,
-CTA) и следом `media` (`src/sections/text-media.js:131-147`); ни один медиазапрос порядок не
-меняет — есть только `.tm.media-left .tm-copy{order:0}` для десктопа.
-
-**Что происходит:** на мобильном изображение уезжает под кнопку.
-
-**Отдельно:** комментарий в файле утверждает, что порядок из спеки соблюдён. Это хуже самого
-бага — он гасит подозрение у следующего читателя.
+**Verified by hand.**
 
 ---
 
-## D-08 · Дублирование обходит правило «один статик на страницу» · SYS-00 §4
+## D-05 · Heading size and alignment in Trust do nothing · Trust §4.1
 
-Проверка уникальности статических модулей живёт только в ящике вставки
-(`src/ui/library.js:23-26`), где дубль показан отключённым. Меню строки в структуре страницы
-предлагает «Duplicate» для любой не-якорной секции, включая Subscription и Contact
-(`src/ui/outline.js:120`), а `duplicateSection` → `insertAfter` никаких проверок не делает.
+The panel offers both controls (through the shared `headingFields`) and the values are stored in
+props. The title renders as `.tr-title` with a hardcoded `font-size: var(--h-m)`
+(`src/sections/trust.js:63,143`); the alignment class on the section shell never reaches it.
 
-**Что происходит:** второй Contact добавляется в один клик и всплывает позже как `E007` в
-панели проблем — то есть правило есть, но работает как отчёт постфактум, а не как guard.
+**What happens:** two controls in the interface with no effect. The same dead pair existed in
+Story & Specs, where it was removed on 11 September 2026 — which turns out to have been
+accidentally the right call.
 
----
-
-## D-09 · Печати аккредитаций рендерятся как текст · Footer §4.2
-
-`accreditation_seals` объявлен как `Array<File<'SVG'>>`. Рендер экранирует каждый элемент
-массива в текстовое содержимое обведённого кружка 44px (`src/sections/footer.js:101-105`) —
-ни разрешения ассета, ни тега `<img>`.
-
-**Что происходит:** сохранённая ссылка на файл отрисовалась бы как собственный идентификатор
-строкой. Проблема до сих пор невидима только потому, что массив приезжает пустым, и вместо
-него подставляются три захардкоженных текстовых заглушки ASTA / IATA / ARC — контент, которого
-глобальный стор никогда не отдавал.
-
-Связанное: редакторов для `navigation_columns`, `social_channels` и `accreditation_seals` нет
-нигде в Global Settings — ни репитера, ни поля JSON. Это пункт `ROADMAP.md`, но вместе с
-дефектом выше он означает, что печати нельзя ни задать, ни отобразить.
+**Verified by hand.** This can be fixed from either end: move `.tr-title` onto the shared heading
+component, or remove the controls as Story & Specs did. The second is cheaper and more honest:
+Trust is a dual-role section whose typography is set by design, not by the page's author.
 
 ---
 
-## Как этим пользоваться
+## D-06 · Cabin class is collected and thrown away · SYS-99 §2, 21 §4
 
-Маркер `DEFECT` в спеке ссылается сюда по номеру. Когда баг починен — маркер в спеке меняется
-на `BUILT`, пункт отсюда удаляется, а в `CHANGELOG.md` появляется строка. Пустой файл — цель,
-а не аномалия.
+Prices faithfully emits `data-cabin` on every row (`src/sections/prices.js:262`). The runtime
+reads it and writes it into `[data-lead-cabin]` inside the modal (`src/render/runtime.js:17-18`).
+No element with that attribute exists in the modal's markup (`src/render/page.js:113-127`).
+
+**What happens:** clicking the row "Tokyo (HND), First Class" opens a modal in which the cabin is
+neither selected nor shown. The whole hand-off is written and breaks at the last step.
+
+---
+
+## D-07 · Text & Media's mobile stack order does not match the spec · 39 §6.4
+
+The spec requires `Title → Media → Paragraph → CTA`. The markup emits `copy` (title, paragraph,
+CTA) followed by `media` (`src/sections/text-media.js:131-147`); no media query reorders them —
+there is only `.tm.media-left .tm-copy{order:0}` for desktop.
+
+**What happens:** on mobile the image ends up below the button.
+
+**Separately:** a comment in the file asserts that the documented order is satisfied. That is
+worse than the bug itself, because it suppresses suspicion in the next reader.
+
+---
+
+## D-08 · Duplicate bypasses the one-static-per-page rule · SYS-00 §4
+
+The uniqueness check for static modules lives only in the insert drawer
+(`src/ui/library.js:23-26`), where a duplicate is shown disabled. The row menu in the page
+structure offers "Duplicate" for any non-anchor section, including Subscription and Contact
+(`src/ui/outline.js:120`), and `duplicateSection` → `insertAfter` performs no check at all.
+
+**What happens:** a second Contact is one click away and surfaces afterwards as `E007` in the
+issues panel — the rule exists, but works as an after-the-fact report rather than as a guard.
+
+---
+
+## D-09 · Accreditation seals render as text · Footer §4.2
+
+`accreditation_seals` is declared as `Array<File<'SVG'>>`. The renderer escapes each array entry
+into the text content of a bordered 44px circle (`src/sections/footer.js:101-105`) — no asset
+resolution, no `<img>` tag.
+
+**What happens:** a stored file reference would render as its own identifier, as a string. The
+problem is invisible so far only because the array ships empty and three hardcoded text
+fallbacks — ASTA / IATA / ARC — take its place, content the global store never supplied.
+
+Related: there are no editors for `navigation_columns`, `social_channels` or
+`accreditation_seals` anywhere in Global Settings — not a repeater, not a JSON box. That is a
+`ROADMAP.md` item, but together with the defect above it means the seals can neither be set nor
+displayed.
+
+---
+
+## How to use this file
+
+A `DEFECT` marker in a spec refers here by number. When a bug is fixed, the marker in the spec
+becomes `BUILT`, the entry here is deleted, and a line appears in `CHANGELOG.md`. An empty file
+is the goal, not an anomaly.

@@ -1,128 +1,130 @@
-# OOUX-модель конструктора лендингов — версия 2
+# OOUX model of the landing-page builder — version 2
 
-## Что изменилось по сравнению с v1
+## What changed against v1
 
-v1 описывал **целевую** систему и сознательно не ссылался на код: сверка жила в одном месте,
-`BACKLOG.md`. Идея была верная, но за несколько ревизий эта таблица отстала от реальности —
-она ссылалась на файлы, которых больше нет, и числила нереализованными вещи, которые уже
-работали. Документация выглядела авторитетной и таковой не была.
+v1 described the **target** system and deliberately avoided referring to the code: the
+reconciliation lived in one place, `BACKLOG.md`. The idea was right, but over a few revisions
+that table fell behind reality — it cited files that no longer exist and listed as unbuilt
+things that already worked. The documentation looked authoritative and was not.
 
-**v2 описывает систему как она есть.** Каждый атрибут и каждое правило несёт маркер
-реализации. Спека больше не может незаметно разойтись с кодом: расхождение теперь либо
-маркер `PLANNED`, либо маркер `DEFECT` — и то и другое видно прямо в таблице.
+**v2 describes the system as it is.** Every attribute and every rule carries an implementation
+marker. A spec can no longer drift quietly: a divergence is now either a `PLANNED` marker or a
+`DEFECT` marker, and both are visible in the table itself.
 
-v1 остаётся рядом, в `Docs/OOUX/`, как исторический слепок. Он не поддерживается.
+v1 remains alongside, in `Docs/OOUX/`, as a historical snapshot. It is not maintained.
 
 ---
 
-## Маркеры реализации
+## Implementation markers
 
-Пятая колонка каждой таблицы атрибутов и суффикс каждого бизнес-правила.
+The fifth column of every attribute table, and a suffix on every business rule.
 
-| Маркер | Значение | Что с этим делать |
+| Marker | Meaning | What to do about it |
 |---|---|---|
-| `BUILT` | Реализовано и работает. Сверено с `src/`. | Ничего. Это контракт. |
-| `PLANNED` | Описано, сознательно не реализовано. | Пункт в `ROADMAP.md`. Ссылаться на него как на существующее поведение нельзя. |
-| `DEFECT` | Реализовано, но не работает: поле собирается и не читается, правило описано и не срабатывает. | Пункт в `DEFECTS.md` с идентификатором находки. Это баг, а не расхождение. |
+| `BUILT` | Implemented and working. Verified against `src/`. | Nothing. This is the contract. |
+| `PLANNED` | Described, deliberately not implemented. | An entry in `ROADMAP.md`. It may not be referenced as existing behaviour. |
+| `DEFECT` | Implemented but not working: a field is collected and never read, a rule is described and never fires. | An entry in `DEFECTS.md` with a finding id. This is a bug, not a divergence. |
 
-**Правило маркировки:** маркера «частично» не существует. Если атрибут читается, но
-не полностью — он `DEFECT`, а ограничение описано в примечании. Компромисс между «работает»
-и «не работает» — это то, из-за чего v1 и разошёлся с кодом.
-
----
-
-## Как читать эти документы
-
-1. **Спека описывает то, что делает код.** Если вы нашли расхождение — это баг документации
-   или баг кода, но не «так задумано».
-2. **`SYSTEM RULES/02_SYSTEM_CANONICAL_ENUMS_AND_VALIDATION.md` — источник истины** для
-   `component_key`, регионов, модели слотов, уровней валидации и глобальных констант. Если
-   другой файл повторяет одно из этих значений — там копия, приоритет у SYS-02.
-3. Дальше — от общего к частному: системные правила → абстрактные классы → корневые объекты →
-   секции → дочерние объекты.
-4. `01` и `02` в корне — **производные** обзоры. Правил в них нет, только навигация.
-5. Секционные документы содержат **только своё**. Общий жизненный цикл и общие стилевые
-   атрибуты описаны один раз в базовых классах `10` и `11` и оттуда не копируются.
-6. Почему что-то устроено именно так и чем это было раньше — в `CHANGELOG.md`. В спеках
-   истории нет.
+**The marking rule:** there is no "partial" marker. If an attribute is read but not fully, it is
+`DEFECT`, and the limitation is described in a note. The compromise between "works" and "does not
+work" is what let v1 drift from the code in the first place.
 
 ---
 
-## Статусы документов
+## How to read these documents
 
-| Статус | Значение |
+1. **A spec describes what the code does.** If you find a divergence, it is a bug in the
+   documentation or a bug in the code — never "by design".
+2. **`SYSTEM RULES/02_SYSTEM_CANONICAL_ENUMS_AND_VALIDATION.md` is the source of truth** for
+   `component_key`, regions, the slot model, validation levels and global constants. If another
+   file repeats one of those values, that is a copy; SYS-02 wins.
+3. Then general to particular: system rules → abstract classes → root objects → sections →
+   child objects.
+4. `01` and `02` at the root are **derived** overviews. They carry no rules, only navigation.
+5. Section documents contain **only what is theirs**. The shared lifecycle and the shared styling
+   attributes are described once, in base classes `10` and `11`, and are never copied out of them.
+6. Why something is the way it is, and what it used to be, is in `CHANGELOG.md`. The specs carry
+   no history.
+
+---
+
+## Document statuses
+
+| Status | Meaning |
 |---|---|
-| `APPROVED` | Непротиворечиво, открытых вопросов нет |
-| `DRAFT` | Внутри остались открытые вопросы, они помечены в тексте |
+| `APPROVED` | Self-consistent, no open questions |
+| `DRAFT` | Open questions remain inside, marked in the text |
 
 ---
 
-## Три файла учёта, у каждого одна работа
+## Three registers, each with one job
 
-| Файл | Что в нём | Чего в нём нет |
+| File | What it holds | What it does not |
 |---|---|---|
-| `ROADMAP.md` | Всё, помеченное `PLANNED`, плюс объекты, которые сознательно не смоделированы | Багов |
-| `DEFECTS.md` | Всё, помеченное `DEFECT`: код есть, поведения нет | Планов |
-| `CHANGELOG.md` | История решений и обоснования правок модели | Текущего состояния |
+| `ROADMAP.md` | Everything marked `PLANNED`, plus objects deliberately left unmodelled | Bugs |
+| `DEFECTS.md` | Everything marked `DEFECT`: the code exists, the behaviour does not | Plans |
+| `CHANGELOG.md` | The history of decisions and the reasoning behind model changes | The current state |
 
-Сводной таблицы «расхождения с реализацией» больше нет. Её работу делают маркеры внутри
-спек — там, где расхождение возникает, а не в отдельном файле, который забывают обновить.
+There is no longer a summary "divergences from the implementation" table. Its job is done by the
+markers inside the specs — at the point where a divergence arises, rather than in a separate file
+that nobody remembers to update.
 
 ---
 
-## Структура
+## Structure
 
 ```
-├── README.md                                   # этот файл
-├── CHANGELOG.md                                # история решений и обоснования правок
-├── ROADMAP.md                                  # PLANNED + несмоделированные объекты
-├── DEFECTS.md                                  # DEFECT: описано, реализовано, не работает
-├── 01-object-map.md                            # карта объектов (производная)
-├── 02-system-taxonomy.md                       # секции + параметры вариантов (производная)
+├── README.md                                   # this file
+├── CHANGELOG.md                                # decision history and the reasoning behind changes
+├── ROADMAP.md                                  # PLANNED + unmodelled objects
+├── DEFECTS.md                                  # DEFECT: described, implemented, not working
+├── 01-object-map.md                            # object map (derived)
+├── 02-system-taxonomy.md                       # sections + variant parameters (derived)
 │
-├── [ СИСТЕМНЫЕ ПРАВИЛА (НЕ ОБЪЕКТЫ) ]
-│   ├── 00_SYSTEM_ARCHITECTURE_AND_SLOTS.md     # топология, slot_index + order_in_slot, L0
-│   ├── 01_SYSTEM_GLOBAL_DESIGN_TOKENS.md       # фоны, типографика (S/M/L), имена CSS-переменных
-│   ├── 02_SYSTEM_CANONICAL_ENUMS_AND_VALIDATION.md  # ★ реестры, уровни валидации, коды ошибок
-│   └── 99_SYSTEM_LEAD_GENERATION_WORKFLOW.md   # триггеры лидов, CRM-payload, атрибуция
+├── [ SYSTEM RULES (NOT OBJECTS) ]
+│   ├── 00_SYSTEM_ARCHITECTURE_AND_SLOTS.md     # topology, slot_index + order_in_slot, L0
+│   ├── 01_SYSTEM_GLOBAL_DESIGN_TOKENS.md       # backgrounds, type scale (S/M/L), CSS variable names
+│   ├── 02_SYSTEM_CANONICAL_ENUMS_AND_VALIDATION.md  # ★ registries, validation levels, error codes
+│   └── 99_SYSTEM_LEAD_GENERATION_WORKFLOW.md   # lead triggers, CRM payload, attribution
 │
-├── [ АБСТРАКТНЫЕ КЛАССЫ ]
-│   ├── 10_ABSTRACT_OBJECT_PAGE_SECTION.md      # базовая секция: слот, порядок, anchor_id, alt
-│   └── 11_ABSTRACT_OBJECT_DYNAMIC_SECTION.md   # динамическая база: фон, заголовок, кнопка
+├── [ ABSTRACT CLASSES ]
+│   ├── 10_ABSTRACT_OBJECT_PAGE_SECTION.md      # base section: slot, order, anchor_id, alt
+│   └── 11_ABSTRACT_OBJECT_DYNAMIC_SECTION.md   # dynamic base: background, header, button
 │
-├── [ КОРНЕВЫЕ ОБЪЕКТЫ ]
-│   ├── 20_OBJECT_LANDING_PAGE.md               # страница: SEO, GEO, URL, статус, слоты
-│   └── 21_OBJECT_FLIGHT_QUOTE_MODAL.md         # ★ модалка лид-формы (контракт полей + payload)
+├── [ ROOT OBJECTS ]
+│   ├── 20_OBJECT_LANDING_PAGE.md               # page: SEO, GEO, URL, status, slots
+│   └── 21_OBJECT_FLIGHT_QUOTE_MODAL.md         # ★ lead-form modal (field contract + payload)
 │
-├── [ ОБЪЕКТЫ СЕКЦИЙ ]
+├── [ SECTION OBJECTS ]
 │   ├── 30_OBJECT_SECTION_HERO.md               # Hero (slot 00)
 │   ├── 31_OBJECT_SECTION_PRICES.md             # Prices (slot 02)
 │   ├── 32_OBJECT_SECTION_TRUST.md              # Trust (slot 04, dual-role)
 │   ├── 33_OBJECT_SECTION_FOOTER.md             # Footer (slot 06, dual-role)
 │   ├── 34_OBJECT_SECTION_STATIC_SUBSCRIPTION.md# Subscription (static module, max 1)
 │   ├── 35_OBJECT_SECTION_STATIC_CONTACT.md     # Contact Us (static module, max 1)
-│   ├── 36_OBJECT_SECTION_QUICK_FACTS.md        # Story & Specs (2–4 факта, 3 фото)
+│   ├── 36_OBJECT_SECTION_QUICK_FACTS.md        # Story & Specs (2–4 facts, 3 photos)
 │   ├── 37_OBJECT_SECTION_MULTI_CARD_GRID.md    # Multi-Card Grid (2/3/4)
 │   ├── 38_OBJECT_SECTION_LARGE_IMAGE_BANNER.md # Large Image Banner
-│   ├── 39_OBJECT_SECTION_TEXT_MEDIA.md         # Text & Media (0/1/2 фото)
+│   ├── 39_OBJECT_SECTION_TEXT_MEDIA.md         # Text & Media (0/1/2 photos)
 │   ├── 40_OBJECT_SECTION_LOGO_MARQUEE.md       # Logo Marquee
-│   ├── 41_OBJECT_SECTION_FEATURE.md            # Feature (пресеты S/M/L)
-│   └── 42_OBJECT_SECTION_FAQ.md                # ★ FAQ (добавлен в v2)
+│   ├── 41_OBJECT_SECTION_FEATURE.md            # Feature (presets S/M/L)
+│   └── 42_OBJECT_SECTION_FAQ.md                # ★ FAQ (added in v2)
 │
-└── [ ДОЧЕРНИЕ ОБЪЕКТЫ ]
-    ├── 50_OBJECT_PRICE_ROW_ITEM.md             # строка таблицы цен (для 31)
-    ├── 51_OBJECT_MEDIA_CARD_ITEM.md            # карточка сетки (для 37)
-    └── 52_OBJECT_FEATURE_ITEM.md               # элемент преимуществ (для 41)
+└── [ CHILD OBJECTS ]
+    ├── 50_OBJECT_PRICE_ROW_ITEM.md             # price-table row (for 31)
+    ├── 51_OBJECT_MEDIA_CARD_ITEM.md            # grid card (for 37)
+    └── 52_OBJECT_FEATURE_ITEM.md               # feature item (for 41)
 ```
 
-★ — `42` описывает секцию, которая существовала в коде и не существовала ни в одном документе
-v1. Именно этот разрыв v2 и должен был закрыть.
+★ — `42` describes a section that existed in the code and in no v1 document. Closing that gap is
+precisely what v2 is for.
 
 ---
 
-## Чего эта модель по-прежнему не защищает
+## What this model still does not protect against
 
-Guard реестра в `src/sections/_registry.js` сверяет список модулей с `COMPONENT_KEYS` в
-`enums.js` — два файла, которые правят одной рукой. Спеку он не читает. Ключ, добавленный
-в код и не добавленный сюда, он не поймает; ровно так `SECTION_FAQ` и прожил в системе,
-не имея документа. Тест, читающий таблицу ключей из `SYS-02 §1`, — пункт `ROADMAP.md`.
+The registry guard in `src/sections/_registry.js` compares the list of modules against
+`COMPONENT_KEYS` in `enums.js` — two files edited by the same hand. It does not read the spec. A
+key added to the code and not added here is a key it will not catch; that is exactly how
+`SECTION_FAQ` lived in the system without a document. A test that reads the key table out of
+`SYS-02 §1` is an entry in `ROADMAP.md`.
